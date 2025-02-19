@@ -76,7 +76,7 @@
     </div>
 
     <div class="our-story" id = "ourstory">
-        <h1>Nigga</h1>
+        <h1>OUR STORY</h1>
         <div class="story">
             <div class="story1">
             <img src="AboutUs-Pics/our_story-founded.png" alt="">
