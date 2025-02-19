@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
 
     <!-- Your custom CSS -->
-    <link rel="stylesheet" href="pet-hotels.css">
+    <link rel="stylesheet" href="pet-hotel.css">
 
     <!-- jQuery and Bootstrap Bundle (includes Popper) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -75,16 +75,22 @@
                         <div class="pet-info dog-info">
                             <img src="Booking/small_dog.png" alt="Small Dog" class="small-dog" data-selected-src="Booking/small_dog(selected).png">
                             <h3>Small Dog</h3>
+                            <h6>Weight: 10kg<br>
+                            ₱ 700</h6>
                         </div>
                         
                         <div class="pet-info dog-info">
                             <img src="Booking/reg_dog.png" alt="Regular Dog" class="reg-dog" data-selected-src="Booking/reg_dog(selected).png">
                             <h3>Regular Dog</h3>
+                            <h6>Weight: 26 - 40 lbs<br>
+                            ₱ 800</h6>
                         </div>
 
                         <div class="pet-info dog-info">
                             <img src="Booking/large_dog.png" alt="Large Dog" class="large-dog" data-selected-src="Booking/large_dog(selected).png">
                             <h3>Large Dog</h3>
+                            <h6>Weight: 40 lbs and above<br>
+                            ₱ 900</h6>
                         </div>
                     </div>
 
@@ -92,6 +98,8 @@
                         <div class="pet-info cat-info">
                             <img src="Booking/reg_cat.png" alt="Cat" class="cat" data-selected-src="Booking/reg_cat(selected).png">
                             <h3>Cat</h3>
+                            <h6>Weight: 4 - 5kg<br>
+                            ₱ 500</h6>
                         </div>
                     </div>
                 </div>
@@ -138,74 +146,63 @@
                             </div>
                         </div>
                     </div>
+                    
+                            <div class="book">BOOK</div>
+
                 </div>
             </div> 
         </div><!-- /.main-container -->
     </div><!-- /.main -->
 
     <script>
-     $(document).ready(function () {
-    // Hide all pet sections initially
-    $(".pet-information-dog, .pet-information-cat").hide();
+        $(document).ready(function () {
+            $(".pet-information-dog, .pet-information-cat").hide();
+            $(".pet-info h3, .pet-info h6").hide();
 
-    // Handle pet type dropdown selection
-    $("#petSelectionMenu + .dropdown-menu .dropdown-item").click(function () {
-        var selectedPet = $(this).text();
-        $("#petSelectionMenu").text(selectedPet);
+            $("#petSelectionMenu + .dropdown-menu .dropdown-item").click(function () {
+                var selectedPet = $(this).text();
+                $("#petSelectionMenu").text(selectedPet);
+                $(".pet-information-dog, .pet-information-cat").hide();
+                if (selectedPet === "Dog") $(".pet-information-dog").fadeIn();
+                else if (selectedPet === "Cat") $(".pet-information-cat").fadeIn();
+            });
 
-        // Hide all pet sections first
-        $(".pet-information-dog, .pet-information-cat").hide();
+            let selectedPet = null;
+            $(".pet-info").hover(
+                function () { $(this).find("h3, h6").fadeIn(); },
+                function () { if (!$(this).hasClass("selected")) $(this).find("h3, h6").fadeOut(); }
+            );
 
-        // Show the appropriate section based on selection
-        if (selectedPet === "Dog") {
-            $(".pet-information-dog").fadeIn();
-        } else if (selectedPet === "Cat") {
-            $(".pet-information-cat").fadeIn();
-        }
-    });
+            $(".pet-info").click(function () {
+                const img = $(this).find("img");
+                if (selectedPet === this) {
+                    $(this).removeClass("selected");
+                    swapImage(img);
+                    $(this).find("h3, h6").fadeOut();
+                    selectedPet = null;
+                } else {
+                    if (selectedPet) {
+                        swapImage($(selectedPet).find("img"));
+                        $(selectedPet).removeClass("selected");
+                        $(selectedPet).find("h3, h6").fadeOut();
+                    }
+                    $(this).addClass("selected");
+                    swapImage(img);
+                    $(this).find("h3, h6").fadeIn();
+                    selectedPet = this;
+                }
+            });
 
-    // Handle pet selection and image toggle
-    let selectedPet = null;
-
-    $(".pet-info").click(function () {
-        const img = $(this).find("img");
-
-        if (selectedPet === this) {
-            $(this).removeClass("selected");
-            swapImage(img);
-            selectedPet = null;
-        } else {
-            if (selectedPet) {
-                swapImage($(selectedPet).find("img"));
-                $(selectedPet).removeClass("selected");
+            function swapImage(img) {
+                let tempSrc = img.attr("src");
+                img.attr("src", img.attr("data-selected-src"));
+                img.attr("data-selected-src", tempSrc);
             }
-            $(this).addClass("selected");
-            swapImage(img);
-            selectedPet = this;
-        }
-    });
 
-    function swapImage(img) {
-        let tempSrc = img.attr("src");
-        img.attr("src", img.attr("data-selected-src"));
-        img.attr("data-selected-src", tempSrc);
-    }
-
-    // Check-in dropdown functionality
-    $("#checkInMenu + .dropdown-menu .dropdown-item").click(function () {
-        $("#checkInMenu").text($(this).text());
-    });
-
-    // Check-out dropdown functionality
-    $("#checkOutMenu + .dropdown-menu .dropdown-item").click(function () {
-        $("#checkOutMenu").text($(this).text());
-    });
-
-    
-});
-
-</script>
-
+            $(".check-in-time").click(function () { $("#checkInMenu").text($(this).text()); });
+            $(".check-out-time").click(function () { $("#checkOutMenu").text($(this).text()); });
+        });
+    </script>
 </body>
 
 </html>
