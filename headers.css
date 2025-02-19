@@ -1,0 +1,110 @@
+*{
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+  box-sizing: border-box; 
+}
+
+body{
+  font-family: "BalooTammudu2-Medium", sans-serif;
+}
+
+nav{
+  background-color: #D98D62;
+  height: 50px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+nav ul li a{
+  color: #FAF1EA;
+  font-size: 17px;
+  padding: 7px 13px;
+  border-radius: 3px;
+}
+
+.lHead {
+  display: flex;
+  height: 100px;
+  background-color: #FAF1EA;
+  justify-content: space-between;
+}
+
+.lHead img {
+  max-width: 100%;
+  height: 150px;
+}
+
+.logos{
+  position: relative;
+  top: -25px;
+}
+
+@media (max-width: 991px){
+  .sidebar{
+    background-color: #D98D62;
+    backdrop-filter: blur(10px);
+  }
+  
+  label.logo{
+    font-size: 30px;
+    padding-left: 50px;
+  }
+
+  nav ul li a{
+    font-size: 16px;
+  }
+
+  .paws1, .paws2{
+    display: none;
+  }
+
+  .lHead {
+    justify-content: center;
+  }
+
+}
+
+
+/*to remove drop down icon*/
+.nav-link.dropdown-toggle::after {
+  display: none 
+}
+
+.dropdown-menu {
+  background-color: #D98D62; 
+  border-radius: 0 ;
+  box-shadow: none ;
+  border: none;
+}
+
+.dropdown-menu .dropdown-item {
+  color: #FAF1EA;
+  width: 100%;
+  padding: 10px 15px;
+  display: block;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: #FAF1EA;
+  color:#D98D62;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  width: 100%; 
+  left: 0 ; 
+  right: 0 ; 
+}
+
+.log{
+  width: 30%; 
+  height: auto;
+}
+
+.nav-item .nav-link.active {
+  color: #331C15;
+}
