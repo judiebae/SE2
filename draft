@@ -1,0 +1,89 @@
+
+#mheader {
+    border-bottom: none;
+    color: #421D11;
+}
+
+#mfooter {
+    border-top: none;
+}
+
+#mbody {
+    border: none;
+    box-shadow: none; 
+    color: #AB643C;
+    padding: 3%;
+    text-align: left;
+}
+
+#mbody li{
+    margin: 2%;
+    color: #AB643C;
+}
+
+#mod-header{
+    color: #AB643C;
+    text-align: center;
+    font-weight: bold;
+}
+
+#mod-body{
+    color: #421D11;
+}
+
+.modal-title {
+    color: #563727;
+    font-weight: bold;
+}
+
+#req-to-cancel-title{
+    color: #AB643C;
+    font-weight: bold;
+}
+
+#mod-footer{
+    background-color: #421D11;
+    color: #ffffff;
+}
+
+
+.modal-content {
+    border-radius: 20px;
+    padding: 1rem;
+}
+
+.modal-header {
+    position: relative;
+}
+
+#cancel-but{
+    border: 1px solid #421D11;
+    color: #421D11;
+    padding: 0.5rem 2rem;
+    border-radius: 5px;
+}
+
+#confirm-but{
+    color: #ffffff;
+    background-color: #563727;
+    border: none;
+    padding: 0.5rem 2rem;
+    border-radius: 5px;
+}
+
+.form-label {
+    color: #C17754;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 0.5rem 1rem;
+}
+
+
+.btn-primary:hover {
+    background-color: #442c1f;
+}
