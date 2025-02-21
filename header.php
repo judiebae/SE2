@@ -1,3 +1,12 @@
+<?php
+ 
+  // include("connect.php");
+
+ 
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -6,15 +15,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="header1.css">
+  <link rel="stylesheet" href="header.css">
 </head>
 <body >
   <div class="lHead">
-    <img src="PIC4.png" alt="pic4" class="paws1">
-    <img src="PIC2.png" alt="pic2" class="paw1">
-    <img src="logo.png" alt="LOGO" class="logos">
-    <img src="PIC3.png" alt="pic3" class="paw2">
-    <img src="PIC5.png" alt="pic5" class="paws2">
+    <img src="Header-Pics/PIC4.png" alt="pic4" class="paws1">
+    <img src="Header-Pics/PIC2.png" alt="pic2" class="paw1">
+    <img src="Header-Pics/logo.png" alt="LOGO" class="logos">
+    <img src="Header-Pics/PIC3.png" alt="pic3" class="paw2">
+    <img src="Header-Pics/PIC5.png" alt="pic5" class="paws2">
   </div>
 
   <nav class="navbar navbar-expand-lg navbar-dark ">
@@ -50,7 +59,7 @@
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               BOOK </a>
             <ul class="dropdown-menu ">
-              <li><a class="dropdown-item" href="#second-scroll">Books</a></li>
+              <li><a class="dropdown-item" href="#second-scroll">Book</a></li>
               <li><a class="dropdown-item" href="#inclusions">Inclusion and Perks</a></li>
             </ul>
           </li>
@@ -81,26 +90,26 @@
 
     <!-- Login Modal -->
     <div class="modal" id="loginModal"  tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Paw’s up, fur-furfriend</h5>
+                <div class="modal-header" >
                      <!-- <h5 class="modal-title">Welcome back to your pet’s favorite spot!</h5>  -->
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" id="login-body">
+                  <h5 class="modal-title">Paw’s up, fur-furfriend</h5>
+                  <h2 class="modal-title"> Welcome back to your pet's favorite spot!</h2>
+
                     <form id="loginForm" action="" method="POST">
                         <input type="hidden" name="action" value="login">
-                        <div class="mb-3">
-                            <label>Email</label>
-                            <input type="email" class="form-control" name="email" required>
+                        <div class="mb-3 d-flex justify-content-center">
+                            <input type="email" class="form-control w-50" name="email" required placeholder="Enter Email">
                         </div>
-                        <div class="mb-3">
-                            <label>Password</label>
-                            <input type="password" class="form-control" name="password" required>
+                        <div class="mb-3  d-flex justify-content-center">
+                            <input type="password" class="form-control w-50" name="password" required placeholder="Enter Password">
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
-                        <p class="mt-3 text-center"><a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Not yet registered?</a></p>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                        <p class="mt-3 text-center" ><a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" id="not-yet-register">Not yet registered?</a></p>
                     </form>
                 </div>
             </div>
@@ -109,42 +118,82 @@
 
     <!-- Register Modal -->
     <div class="modal fade" id="registerModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Register</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="registerForm" action="" method="POST">
-                        <input type="hidden" name="action" value="register">
-                        <div class="mb-3">
-                            <label>First Name</label>
-                            <input type="text" class="form-control" name="firstName" required>
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-dialog modal-xl">
+                <div class="modal-content border-0 p-0">
+                    <div class="row g-0">
+                        <!-- Form Side -->
+                        <div class="col-md-6 form-side">
+                            
+                            <div class="p-4 p-md-4">
+                                <h2 class="fw-bold mb-2">Register</h2>
+                                <p class="text-muted mb-2">Fill in this form to create an account</p>
+                                <hr>
+                                
+                                <form id="registerForm" method="POST">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="mb-1">
+                                              <label for="firstName">First Name <span class="text-danger">*</span></label>
+                                              <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Enter First Name" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-6">
+                                            <div class="mb-3">
+                                              <label for="lastName">Last Name <span class="text-danger">*</span></label>
+                                              <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Enter Last Name" required>      
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label for="email">Email <span class="text-danger">*</span></label>
+                                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter Email" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                              <label for="contactNumber">Contact Number <span class="text-danger">*</span></label>  
+                                              <input type="tel" class="form-control" id="contactNumber" name="contactNumber" placeholder="Contact Number" required>  
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <div class="mb-3 password-input">
+                                              <label for="password">Password <span class="text-danger">*</span></label>
+                                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>  
+                                                <span class="validation-icon"></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <div class="mb-3 password-input">
+                                                <label for="repeatPassword">Repeat Password <span class="text-danger">*</span></label>
+                                                <input type="password" class="form-control" id="repeatPassword" name="repeatPassword" placeholder="Repeat Password" required>
+                                                <span class="validation-icon"></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary create-button w-100" id="create-but">Create</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-center mt-4 mb-0">
+                                        Already have an account? 
+                                        <a href="#" class="sign-in-link" id="sign-in">Sign in</a>
+                                    </p>  
+                                </form>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label>Last Name</label>
-                            <input type="text" class="form-control" name="lastName" required>
+                        
+                        <!-- Image Side -->
+                        <div class="col-md-6 d-none d-md-block image-side p-0">
+                            <img src="Register-dog.png" alt="Happy dog" class="dog-image">
                         </div>
-                        <div class="mb-3">
-                            <label>Email</label>
-                            <input type="email" class="form-control" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label>Contact Number</label>
-                            <input type="text" class="form-control" name="contactNumber" required>
-                        </div>
-                        <div class="mb-3">
-                            <label>Password</label>
-                            <input type="password" class="form-control" name="password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label>Repeat Password</label>
-                            <input type="password" class="form-control" name="repeatPassword" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Create</button>
-                        <p class="mt-3 text-center"><a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Already have an account? Sign in</a></p>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

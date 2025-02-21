@@ -1,0 +1,108 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    border-radius: 20px !important;
+    overflow: hidden;
+}
+
+.form-side {
+    background-color: #FBE6D7;
+}
+
+.image-side {
+    background-color: #FBE6D7;
+}
+
+.dog-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.form-floating > label {
+    color: #666;
+}
+
+.form-control:focus {
+    border-color: #B67F5C;
+    box-shadow: 0 0 0 0.25rem rgba(182, 127, 92, 0.25);
+}
+
+.password-input {
+    position: relative;
+}
+
+.validation-icon {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    z-index: 3;
+}
+
+.validation-icon.valid::after {
+    content: '✓';
+    color: #198754;
+    font-weight: bold;
+}
+
+.create-button {
+    background-color: #B67F5C !important;
+    color: white !important;
+    padding: 12px !important;
+    font-size: 16px !important;
+    transition: background-color 0.3s !important;
+}
+
+.create-button:hover {
+    background-color: #95664A !important;
+}
+
+.sign-in-link {
+    color: #B67F5C;
+    text-decoration: none;
+}
+
+.sign-in-link:hover {
+    color: #95664A;
+    text-decoration: underline;
+}
+
+/* Bootstrap Overrides */
+.form-floating>.form-control {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+}
+
+.form-floating>.form-control:focus~label,
+.form-floating>.form-control:not(:placeholder-shown)~label {
+    transform: scale(.85) translateY(-1rem) translateX(.15rem);
+}
+
+.btn-close {
+    z-index: 5;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767.98px) {
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+    
+    .form-side {
+        border-radius: 20px;
+    }
+}

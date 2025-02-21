@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 
     <link rel="stylesheet" href="abouts.css">
-    <title>About Adorafur</title>
+    <title>Joanne Joaquin</title>
 </head>
 <body>
 
