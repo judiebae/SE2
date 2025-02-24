@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="homes.css">
+    <link rel="stylesheet" href="homers.css">
     <script src="script.js" defer></script>
     <title>Adorafur Happy Stay</title>
 </head>
 <body>
-    <div id="header">
+    
         <?php include 'header.php'; ?>
-    </div>
+   
 
 
     <div class="home">
@@ -131,7 +131,7 @@
                     </div>
                 </div>
             
-                <img class="yellowPaw" src="Home-Pics/yellow-paw.png" alt="yelows">
+               
 
                 <div class="perks">
                     <div class="perks1"><img src="Home-Pics/PERKS2.png" alt=""></div>

@@ -64,24 +64,18 @@
    $email = $_POST['email'];
    $password = $_POST['password'];
  
-   $stmt = $conn->prepare("SELECT * FROM users WHERE email = :email");
-   $stmt->bindParam(':email', $email);
-   $stmt->execute();
-   $user = $stmt->fetch(PDO::FETCH_ASSOC);
- 
-   if ($user && password_verify($password, $user['password'])) {
-       $_SESSION['user_id'] = $user['id']; // Store user session
-         $_SESSION['user_name'] = $user['first_name']; // Optional: Store username
- 
-         // Redirect back to previous page if set, otherwise go to home
-         $redirect_url = isset($_SESSION['redirect_url']) ? $_SESSION['redirect_url'] : 'profile.php';
-         unset($_SESSION['redirect_url']); // Clear session variable after use
-         
-         header("Location: $redirect_url");
-         exit();
-   } else {
-       echo "Invalid email or password.";
-   }
+   $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user_id'] = $user['id']; 
+    } else {
+        echo "Invalid email or password.";
+    }
  }
 
 ?>
