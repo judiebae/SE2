@@ -1,8 +1,88 @@
 <?php
  
-  // include("connect.php");
+ include("connect.php");
 
+ if ($_SERVER["REQUEST_METHOD"] == "POST") {
+   if (isset($_POST['action'])) {
+       switch ($_POST['action']) {
+           case 'register':
+               handleRegister($conn);
+               break;
+           case 'login':
+               handleLogin($conn);
+               break;
+           case 'forgotPassword':
+               handleForgotPassword($conn);
+               break;
+       }
+   }
+ }
  
+ function handleRegister($conn) {
+   $firstName = $_POST['firstName'];
+   $lastName = $_POST['lastName'];
+   $email = $_POST['email'];
+   $contactNumber = $_POST['contactNumber'];
+   $password = $_POST['password'];
+   $repeatPassword = $_POST['repeatPassword'];
+   
+   if ($password !== $repeatPassword) {
+       echo "Passwords do not match.";
+       return;
+   }
+ 
+   if (!preg_match('/^09[0-9]{9}$/', $contactNumber)) {
+       echo "Invalid Philippine phone number format.";
+       return;
+   }
+ 
+   $stmt = $conn->prepare("SELECT * FROM users WHERE email = :email");
+   $stmt->bindParam(':email', $email);
+   $stmt->execute();
+ 
+   if ($stmt->rowCount() > 0) {
+       echo "Email already registered.";
+       return;
+   }
+ 
+   $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+   $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, contact_number, password) VALUES (:firstName, :lastName, :email, :contactNumber, :password)");
+   $stmt->bindParam(':firstName', $firstName);
+   $stmt->bindParam(':lastName', $lastName);
+   $stmt->bindParam(':email', $email);
+   $stmt->bindParam(':contactNumber', $contactNumber);
+   $stmt->bindParam(':password', $hashedPassword);
+ 
+   if ($stmt->execute()) {
+       echo "Registration successful!";
+   } else {
+       echo "Error during registration.";
+   }
+ }
+ 
+ function handleLogin($conn) {
+   $email = $_POST['email'];
+   $password = $_POST['password'];
+ 
+   $stmt = $conn->prepare("SELECT * FROM users WHERE email = :email");
+   $stmt->bindParam(':email', $email);
+   $stmt->execute();
+   $user = $stmt->fetch(PDO::FETCH_ASSOC);
+ 
+   if ($user && password_verify($password, $user['password'])) {
+       $_SESSION['user_id'] = $user['id']; // Store user session
+         $_SESSION['user_name'] = $user['first_name']; // Optional: Store username
+ 
+         // Redirect back to previous page if set, otherwise go to home
+         $redirect_url = isset($_SESSION['redirect_url']) ? $_SESSION['redirect_url'] : 'profile.php';
+         unset($_SESSION['redirect_url']); // Clear session variable after use
+         
+         header("Location: $redirect_url");
+         exit();
+   } else {
+       echo "Invalid email or password.";
+   }
+ }
 
 ?>
 
@@ -131,6 +211,7 @@
                                 <hr>
                                 
                                 <form id="registerForm" method="POST">
+                                <input type="hidden" name="action" value="register">
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <div class="mb-1">
