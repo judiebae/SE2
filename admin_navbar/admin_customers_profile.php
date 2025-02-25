@@ -56,9 +56,14 @@
           <div class="user-name">Han Isaac Bascao</div>
 
           <div class="gd-status"> 
-            Gold Member 
-          <img src="edit-icon.png" class="edit-img">
-          </div>
+    Gold Member 
+    <button class="open-btn">
+        <img src="edit-icon.png" class="edit-img" alt="Edit">
+    </button>
+</div>
+
+
+
 
         <div class="pet-card">
             <div class="pet-profile1">Eddie</div>
@@ -109,6 +114,36 @@
     </div>
     
   </div>
+  <div class="modal-bg"></div>
+  <!-- Move the modal outside -->
+<div class="modal-bg"></div>
+<div class="modal">
+    <div class="cancel-btn">Cancel</div>
+    <div class="save-btn">Save</div>
+    <img src="status-update-modal.png" class="status-header">
+    <div class="status-info">
+        <p class="memb-status-title">Membership Status Update</p>
+        <p class="memb-status-pay">Payment Method</p>
+        <p class="memb-status-text">Membership Status</p>
+
+        <input type="radio" id="status-reg" name="memb-status" value="REGULAR">
+        <label for="status-reg">Regular</label><br>
+
+        <input type="radio" id="status-silver" name="memb-status" value="SILVER">
+        <label for="status-silver">Silver</label><br>
+
+        <input type="radio" id="status-gold" name="memb-status" value="GOLD">
+        <label for="status-gold">Gold</label><br>
+
+        <input type="radio" id="status-platinum" name="memb-status" value="PLATINUM">
+        <label for="status-platinum">Platinum</label><br>
+
+        <p class="memb-status-amount">Amount</p>
+        <p class="memb-status-ref-no">Reference No.</p>
+        <p class="memb-status-pop">Proof of Payment</p>
+    </div>
+</div>
+
   <script src="admin.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

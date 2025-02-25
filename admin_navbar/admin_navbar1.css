@@ -1194,13 +1194,6 @@ html, body {
   margin-bottom: 15px;
 }
 
-/* Edit Icon */
-.edit-img {
-  width: 12px;
-  height: 12px;
-  margin-left: 5px;
-}
-
 /* Pet Card */
 .pet-card {
   background: #ffffff;
@@ -1352,4 +1345,39 @@ html, body {
 
 .trans-record-ref-number{
   margin-right: 10px;
+}
+
+.open-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.edit-img {
+  width: 12px;
+  height: 12px;
+}
+
+.modal-bg{
+  background-color: rgba(184, 184, 184, 0.432);
+  width: 100%;
+  height: 100%;
+  position: absolute; 
+  top: 0;
+  left: 0;
+  backdrop-filter: blur(2px);
+  display: none; 
+}
+
+.modal-bg.open {
+  display: block;
+}
+
+.modal{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fbf2ec;
 }
