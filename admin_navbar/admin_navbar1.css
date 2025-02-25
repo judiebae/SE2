@@ -1376,8 +1376,9 @@ html, body {
 
 /* Modal Box */
 .modal-content {
+  background-color: #fbf2ec !important; /* Change modal box background */
   margin-left: 200px;
-  margin-top: 30px;
+  margin-top: 50px;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
@@ -1385,9 +1386,9 @@ html, body {
   max-width: 860px;
   max-height: 100vh;
   overflow-y: auto;
-  background-color: #fbf2ec;
   z-index: 1001;
 }
+
 
 /* Membership Status Header */
 .memb-status-header {
