@@ -1,324 +1,123 @@
+<?php
+// Database connection details
+$host = "localhost";
+$dbname = "fur_a_paw_intments";
+$username = "root";
+$password = "";
+
+$conn = new mysqli($host, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Assuming booking_id is passed via query parameter, e.g., edit_booking.php?booking_id=B001
+$booking_id = $_GET['booking_id'];
+
+// Query to fetch booking data along with related pet, service, and payment details
+$sql = "
+    SELECT 
+        b.booking_id, 
+        b.booking_check_in, 
+        b.booking_check_out,
+        b.booking_status,
+        p.pet_name,
+        p.pet_breed,
+        p.pet_size,
+        s.service_name,
+        pay.payment_method,
+        pay.payment_status AS pay_status,
+        pay.payment_amount,
+        pay.payment_reference_number,
+        c.customer_first_name,
+        c.customer_last_name,
+        c.customer_contact_number,
+        c.customer_email
+    FROM booking b
+    JOIN pet p ON b.pet_id = p.pet_id
+    JOIN service s ON b.service_id = s.service_id
+    JOIN payment pay ON b.payment_id = pay.payment_id
+    JOIN customer c ON p.customer_id = c.customer_id
+    WHERE b.booking_id = ?
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('s', $booking_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$bookingData = $result->fetch_assoc();
+$stmt->close();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pet Hotel Management</title>
-    <style>
-        :root {
-            --blue-header: #17488a;
-            --brown-text: #663a2c;
-            --gray-text: #777777;
-            --border-color: #e2e2e2;
-            --modal-overlay: rgba(0, 0, 0, 0.5);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "BalooTammudu2-Medium", sans-serif;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--modal-overlay);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            z-index: 50;
-        }
-
-        .modal {
-            background: white;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 1200px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .header {
-            background: var(--blue-header);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .header-id {
-            color: #e5e5e5;
-            font-size: 2.5rem;
-            font-weight: 500;
-        }
-
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .staff-section {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .staff-label {
-            color: white;
-            font-size: 1.1rem;
-        }
-
-        select {
-            padding: 0.5rem;
-            width: 180px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            background: white;
-            color: var(--gray-text);
-            cursor: pointer;
-        }
-
-        .button {
-            padding: 0.5rem 1.5rem;
-            border-radius: 4px;
-            border: none;
-            background: white;
-            color: var(--blue-header);
-            font-weight: 500;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .button:hover {
-            opacity: 0.9;
-        }
-
-        .main-content {
-            padding: 2rem;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-        }
-
-        .form-section {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .form-group {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .form-label {
-            width: 160px;
-            color: var(--brown-text);
-            font-weight: 500;
-            font-size: 1.1rem;
-        }
-
-        .form-input {
-            flex: 1;
-            padding: 0.5rem;
-            border: 1px solid var(--border-color);
-            border-radius: 2px;
-            color: var(--gray-text);
-        }
-
-        .payment-section {
-            margin-top: 2rem;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: .5rem;
-        }
-
-        .payment-header {
-            color: var(--brown-text);
-            font-size: 1.1rem;
-            font-weight: 500;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .payment-header::after {
-            content: '▼';
-            font-size: 0.8rem;
-            transition: transform 0.2s ease;
-        }
-
-        .payment-form {
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1rem;
-            overflow: hidden;
-        }
-
-        .payment-section[data-expanded="true"] .payment-header::after {
-            transform: rotate(180deg);
-        }
-
-        .payment-section[data-expanded="true"] .payment-form {
-            display: grid;
-        }
-
-        .payment-form {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .payment-section[data-expanded="true"] .payment-form {
-            opacity: 1;
-        }
-
-        .save-payment {
-            grid-column: 1 / -1;
-            background: #666666;
-            color: white;
-            padding: 0.5rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 1rem;
-        }
-
-        @media (max-width: 1024px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .modal {
-                height: 100vh;
-                max-height: none;
-                border-radius: 0;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .header-controls {
-                flex-direction: column;
-            }
-
-            .form-group {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .form-label {
-                width: 100%;
-            }
-
-            .form-input {
-                width: 100%;
-            }
-
-            .payment-form {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Animation for modal */
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal {
-            animation: modalFadeIn 0.3s ease;
-        }
-    </style>
+    <link rel="stylesheet" href="yes.css">
 </head>
 <body>
     <div class="modal-overlay">
         <div class="modal">
             <header class="header">
-                <div class="header-id">PO45849</div>
+                <div class="header-id"><?php echo $bookingData['booking_id']; ?></div>
                 <div class="header-controls">
                     <div class="staff-section">
                         <label class="staff-label">Staff:</label>
-                        <select class="staff-select">
-                            <option>Veronica</option>
-                            <option>John</option>
-                            <option>Sarah</option>
+                        <select class="staff-select" id="staffSelect">
+                            <option value="Veronica">Veronica</option>
+                            <option value="John">John</option>
+                            <option value="Sarah">Sarah</option>
                         </select>
                     </div>
                     <div class="button-group">
-                        <button class="button">Save</button>
+                        <button class="button" id="saveButton">Save</button>
                         <button class="button" onclick="document.querySelector('.modal-overlay').style.display='none'">Cancel</button>
                     </div>
                 </div>
             </header>
 
             <main class="main-content">
-                <form class="form-grid">
+                <form class="form-grid" id="updateBookingForm">
                     <!-- Left Column -->
                     <div class="form-section">
                         <div class="form-group">
                             <label class="form-label">Owner Name:</label>
-                            <input type="text" class="form-input" value="Han Bascao">
+                            <input type="text" class="form-input" name="ownerName" value="<?php echo $bookingData['customer_first_name'] . ' ' . $bookingData['customer_last_name']; ?>" id="ownerName">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Contact:</label>
-                            <input type="text" class="form-input" value="0944 234 2413">
+                            <input type="text" class="form-input" name="contact" value="<?php echo $bookingData['customer_contact_number']; ?>" id="contact">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Comm Plat:</label>
-                            <input type="text" class="form-input" value="Viber">
+                            <input type="text" class="form-input" name="commPlat" value="Viber" id="commPlat">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Pet Name:</label>
-                            <input type="text" class="form-input" value="Eddie">
+                            <input type="text" class="form-input" name="petName" value="<?php echo $bookingData['pet_name']; ?>" id="petName">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Pet Type:</label>
-                            <input type="text" class="form-input" value="Dog">
+                            <input type="text" class="form-input" name="petType" value="<?php echo $bookingData['pet_size']; ?>" id="petType">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Pet Breed:</label>
-                            <input type="text" class="form-input" value="Shih Tzu">
+                            <input type="text" class="form-input" name="petBreed" value="<?php echo $bookingData['pet_breed']; ?>" id="petBreed">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Service:</label>
-                            <input type="text" class="form-input" value="Pet Hotel">
+                            <input type="text" class="form-input" name="service" value="<?php echo $bookingData['service_name']; ?>" id="service">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Pet Breed:</label>
-                            <input type="text" class="form-input" value="09/05/2024">
+                            <label class="form-label">Check-in:</label>
+                            <input type="text" class="form-input" name="checkIn" value="<?php echo $bookingData['booking_check_in']; ?>" id="checkIn">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Service:</label>
-                            <input type="text" class="form-input" value="09/10/2024">
+                            <label class="form-label">Check-out:</label>
+                            <input type="text" class="form-input" name="checkOut" value="<?php echo $bookingData['booking_check_out']; ?>" id="checkOut">
                         </div>
                     </div>
 
@@ -326,23 +125,23 @@
                     <div class="form-section">
                         <div class="form-group">
                             <label class="form-label">Balance:</label>
-                            <input type="text" class="form-input" value="PHP 500.00">
+                            <input type="text" class="form-input" name="balance" value="<?php echo $bookingData['payment_amount']; ?>" id="balance">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Amount:</label>
-                            <input type="text" class="form-input" value="PHP 300.00">
+                            <input type="text" class="form-input" name="amount" value="<?php echo $bookingData['payment_amount']; ?>" id="amount">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Mode of payment:</label>
-                            <input type="text" class="form-input" value="Gcash">
+                            <label class="form-label">Mode of Payment:</label>
+                            <input type="text" class="form-input" name="paymentMode" value="<?php echo $bookingData['payment_method']; ?>" id="paymentMode">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Reference No:</label>
-                            <input type="text" class="form-input" value="123456">
+                            <input type="text" class="form-input" name="referenceNo" value="<?php echo $bookingData['payment_reference_number']; ?>" id="referenceNo">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Payment Status</label>
-                            <input type="text" class="form-input" value="Downpayment">
+                            <label class="form-label">Payment Status:</label>
+                            <input type="text" class="form-input" name="paymentStatus" value="<?php echo $bookingData['pay_status']; ?>" id="paymentStatus">
                         </div>
 
                         <div class="payment-section" data-expanded="false" onclick="this.setAttribute('data-expanded', this.getAttribute('data-expanded') === 'true' ? 'false' : 'true')">
@@ -350,19 +149,19 @@
                             <div class="payment-form">
                                 <div class="form-group">
                                     <label class="form-label">Amount Paid:</label>
-                                    <input type="text" class="form-input" value="PHP 200.00" onclick="event.stopPropagation()">
+                                    <input type="text" class="form-input" name="amountPaid" value="PHP 200.00" id="amountPaid">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Mode of Payment:</label>
-                                    <input type="text" class="form-input" value="Gcash" onclick="event.stopPropagation()">
+                                    <input type="text" class="form-input" name="paymentModeAdd" value="Gcash" id="paymentModeAdd">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Balance:</label>
-                                    <input type="text" class="form-input" value="PHP 200.00" onclick="event.stopPropagation()">
+                                    <input type="text" class="form-input" name="balanceAdd" value="PHP 200.00" id="balanceAdd">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Payment Status:</label>
-                                    <input type="text" class="form-input" value="PHP 200.00" onclick="event.stopPropagation()">
+                                    <input type="text" class="form-input" name="paymentStatusAdd" value="Downpayment" id="paymentStatusAdd">
                                 </div>
                                 <button class="save-payment" onclick="event.stopPropagation()">Save</button>
                             </div>
@@ -372,5 +171,52 @@
             </main>
         </div>
     </div>
+
+    <script>
+        // Save Button Click Handler
+        document.getElementById('saveButton').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            // Create the data to send via POST
+            const formData = new FormData(document.getElementById('updateBookingForm'));
+            const data = {
+                ownerName: formData.get('ownerName'),
+                contact: formData.get('contact'),
+                commPlat: formData.get('commPlat'),
+                petName: formData.get('petName'),
+                petType: formData.get('petType'),
+                petBreed: formData.get('petBreed'),
+                service: formData.get('service'),
+                checkIn: formData.get('checkIn'),
+                checkOut: formData.get('checkOut'),
+                balance: formData.get('balance'),
+                amount: formData.get('amount'),
+                paymentMode: formData.get('paymentMode'),
+                referenceNo: formData.get('referenceNo'),
+                paymentStatus: formData.get('paymentStatus'),
+                booking_id: "<?php echo $booking_id; ?>"
+            };
+
+            fetch('update_booking.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('Booking updated successfully!');
+                } else {
+                    alert('Error updating booking.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating the booking!');
+            });
+        });
+    </script>
 </body>
 </html>
