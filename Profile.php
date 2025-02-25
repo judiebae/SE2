@@ -3,6 +3,12 @@
 session_start();
 include("connect.php");
 
+if (!isset($_SESSION['user_id']) || !$_SESSION['logged_in']) {
+    // User is not logged in, redirect to login page
+    header("Location: login.php");
+    exit();
+}
+
 // After including connect.php
 if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
