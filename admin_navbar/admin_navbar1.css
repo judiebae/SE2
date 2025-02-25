@@ -1275,7 +1275,6 @@ html, body {
   top: -73px; /* Adjust to align vertically with the container */
 }
 
-
 .trans-record {
   display: flex; 
   justify-content: space-between; /* Distributes the items evenly */
@@ -1358,26 +1357,112 @@ html, body {
 .edit-img {
   width: 12px;
   height: 12px;
+  margin-left: 7px;
 }
 
-.modal-bg{
-  background-color: rgba(184, 184, 184, 0.432);
+
+/* Modal Background (Full Screen) */
+.modal {
+  position: fixed;
+  top: 0;
   width: 100%;
   height: 100%;
-  position: absolute; 
-  top: 0;
-  left: 0;
-  backdrop-filter: blur(2px);
-  display: none; 
-}
-
-.modal-bg.open {
-  display: block;
-}
-
-.modal{
+  background-color: rgba(0, 0, 0, 0.4); /* Dark overlay */
   display: flex;
-  flex-direction: column;
   align-items: center;
-  background-color: #fbf2ec;
+  justify-content: center;
+  z-index: 1000;
 }
+
+/* Modal Box */
+.modal-content {
+  margin-left: 200px;
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  width: 50%;
+  max-width: 860px;
+  max-height: 100vh;
+  overflow-y: auto;
+  background-color: #fbf2ec;
+  z-index: 1001;
+}
+
+/* Membership Status Header */
+.memb-status-header {
+  font-family: "BalooTammudu2-Bold", sans-serif; /* Match existing font style */
+  font-size: 28px; /* Adjust size as needed */
+  font-weight: 700; /* Make it bold */
+  color: #b36942;
+  text-align: center; /* Center align */
+  margin-bottom: 7x; /* Add spacing below */
+  margin-top: 7px; /* Add spacing below */
+}
+
+/* Cancel & Save Buttons */
+.modal-button {
+  background-color: #d8c4b6;
+  color: white;
+  padding: 10px 16px; /* Adjust padding for better spacing */
+  border: none;
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer;
+  font-size: 16px;
+  width: 120px;
+}
+
+/* Adds spacing between buttons */
+#cancelBtn {
+  margin-right: 10px;
+}
+
+label {
+  display: inline-block;
+  margin-right: 10px;
+  font-weight: bold;
+  margin-bottom: 7px;
+  color: #421d11;
+}
+
+#status-reg, #status-silver, #status-gold, #status-platinum {
+  accent-color: #b36942; /* Change radio button color */
+  width: 18px; /* Adjust size */
+  height: 18px;
+}
+
+#status-reg + label, #status-silver + label, #status-gold + label, #status-platinum + label {
+  color: #d98d62;
+  font-weight: normal; /* Ensures the label is not bold */
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.input-group label {
+  width: 150px; /* Adjust label width to keep it aligned */
+  text-align: left;
+}
+
+.input-group input {
+  width: auto; /* Keeps the input at its default size */
+  text-align: left; /* Aligns text inside the input field */
+  border: 1px solid; /* Adjust thickness and color */
+  border-radius: 4px; /* Optional: adds rounded corners */
+}
+
+.cancel-save-btns {
+  text-align: center;
+  margin-top: 15px;
+  display: flex;
+  justify-content: center; /* Center the buttons */
+  gap: 15px; /* Add space between buttons */
+  height: 20px;
+  align-items: center;
+}
+
