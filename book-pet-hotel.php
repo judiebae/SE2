@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
 
     <!-- Your custom CSS -->
-    <link rel="stylesheet" href="book-pet-hotel.css">
+    <link rel="stylesheet" href="book-pet-hotels.css">
 
     <!-- jQuery and Bootstrap Bundle (includes Popper) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -156,6 +156,19 @@
                                 <div class="client">
                                     <b>Client name</b><br>
                                     <span class="client-email">Client Email</span>
+                                </div>
+                                <div class = pet-1>
+                                    <div class = "pets"><b>Pet/s</b></div>
+                                    <hr class="hr-pet" id="flex">
+                                        <div class = pet-2>
+                                            <div class = "labels"><b>NAME</b></div>
+                                            <div class = "labels"><b>BREED</b></div>
+                                            <div class = "labels"><b>AGE</b></div>
+                                            <div class = "labels"><b>GENDER</b></div>
+                                            <div class = "labels"><b>SIZE</b></div>
+                                            <div class = "labels"><b>PRICE</b></div>
+                                        </div>
+                                    <hr class="hr-pet" id="flex">
                                 </div>
                             </div>
                         </div>
