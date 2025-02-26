@@ -39,217 +39,8 @@ $booking = $result->fetch_assoc();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Let's Seal the Deal! - Payment Confirmation</title>
-    <style>
-        :root {
-            --primary-bg: #F7E2CF;
-            --primary-text: #AB643C;
-            --button-bg: #55402F;
-            --text-color: #545454;
-            --coral-text: #D98D62;
-        }
+    <link rel="stylesheet" href="seal.css">
 
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: 'Ballotadmu-Medium', sans-serif;
-            background-color: rgba(0, 0, 0, 0.5);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .payment-modal {
-            background-color: var(--primary-bg);
-            border-radius: 24px;
-            padding: 30px;
-            width: 1000px;
-            position: relative;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        .paw-prints {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            opacity: 0.3;
-        }
-
-        h1 {
-            color: var(--primary-text);
-            font-size: 36px;
-            margin: 0;
-            grid-column: 1 / -1;
-            text-align: center;
-        }
-
-        .subtitle {
-            grid-column: 1 / -1;
-            text-align: center;
-            color: var(--text-color);
-            margin: 0 0 20px 0;
-        }
-
-        .booking-details {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .transaction-number {
-            color: var(--text-color);
-            font-weight: bold;
-            margin: 0;
-        }
-
-        .pet-name {
-            color: var(--coral-text);
-            font-size: 24px;
-            margin: 5px 0;
-        }
-
-        .details-grid {
-            display: grid;
-            gap: 8px;
-        }
-
-        .details-row {
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            color: var(--coral-text);
-        }
-
-        .details-row .value {
-            color: var(--text-color);
-        }
-
-        .payment-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .qr-codes {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .qr-code {
-            width: 100%;
-            max-width: 200px;
-            height: auto;
-        }
-
-        .payment-form {
-            margin-top: 20px;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            margin: 10px 0;
-        }
-
-        .radio-group label {
-            color: var(--coral-text);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .reference-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin: 5px 0;
-        }
-
-        .upload-btn {
-            display: inline-block;
-            padding: 8px 16px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-            color: var(--text-color);
-        }
-
-        .complete-btn {
-            background: var(--button-bg);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            float: right;
-            margin-top: 20px;
-        }
-
-        /* Success Modal Styles */
-        .success-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .success-content {
-            background: var(--primary-bg);
-            width: 800px;
-            height: 400px;
-            border-radius: 24px;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-        }
-
-        .success-content h2 {
-            color: var(--primary-text);
-            font-size: 42px;
-            margin: 20px 0;
-        }
-
-        .success-content img {
-            width: 300px;
-            height: auto;
-            margin: 20px 0;
-        }
-
-        .success-content .okay-btn {
-            background: var(--button-bg);
-            color: white;
-            border: none;
-            padding: 12px 40px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 20px 0;
-        }
-
-        .success-content a {
-            color: var(--primary-text);
-            text-decoration: none;
-            display: block;
-            margin-top: 10px;
-        }
-
-        .account-info {
-            color: var(--coral-text);
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-    </style>
 </head>
 <body>
     <div class="payment-modal">
@@ -298,7 +89,7 @@ $booking = $result->fetch_assoc();
                 <input type="text" class="reference-input" placeholder="Enter Reference Number" required>
                 
                 <label class="upload-btn">
-                    📎 Upload Here
+                Upload Here
                     <input type="file" accept="image/*" required style="display: none;">
                 </label>
             </div>
@@ -306,8 +97,8 @@ $booking = $result->fetch_assoc();
 
         <div class="payment-section">
             <div class="qr-codes">
-                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-RHu4Y3NL0GrRbDTuKtQBOzBqGV3ib7.png" alt="GCash QR" class="qr-code">
-                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-RHu4Y3NL0GrRbDTuKtQBOzBqGV3ib7.png" alt="Maya QR" class="qr-code">
+                <img src="temp_gcash.png" alt="GCash QR" class="qr-code1">
+                <img src="temp_maya.png" alt="Maya QR" class="qr-code2">
             </div>
             
             <div class="account-info">
@@ -327,9 +118,9 @@ $booking = $result->fetch_assoc();
             <h2>Transaction ID No. <?php echo $booking['booking_id']; ?></h2>
             <p>Wait for our team's confirmation on your reservation.</p>
             <p>Thank you!</p>
-            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-aCDBV3zOmTgQlibaR7BtUA7tqlGqD1.png" alt="Success">
             <button class="okay-btn" onclick="window.location.href='index.php'">Okay</button>
             <a href="index.php">Go back to Homepage</a>
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-aCDBV3zOmTgQlibaR7BtUA7tqlGqD1.png" alt="Success">
         </div>
     </div>
 
