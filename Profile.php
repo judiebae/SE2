@@ -1,10 +1,11 @@
 <?php
 
-session_start();
+if (session_status() == PHP_SESSION_NONE) { 
+    session_start(); 
+} 
 include("connect.php");
 
-if (!isset($_SESSION['user_id']) || !$_SESSION['logged_in']) {
-    // User is not logged in, redirect to login page
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
@@ -13,32 +14,6 @@ if (!isset($_SESSION['user_id']) || !$_SESSION['logged_in']) {
 if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
-
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    die("User is not logged in.");
-}
-
-$user_id = $_SESSION['user_id'];
-echo "User ID: " . $user_id . "<br>";
-
-// Execute the query
-$customer_info = mysqli_query($conn, "SELECT * FROM users WHERE id='$user_id'");
-if (!$customer_info) {
-    die("Query failed: " . mysqli_error($conn));
-}
-
-// Fetch the results
-$fetch_cust_info = mysqli_fetch_assoc($customer_info);
-if (!$fetch_cust_info) {
-    die("No user found with ID: " . $user_id);
-}
-
-// Display the fetched data
-echo "<pre>";
-print_r($fetch_cust_info);
-echo "</pre>";
-
 ?>
 
 
@@ -125,12 +100,12 @@ echo "</pre>";
 
                                     <div class="mb-3">
                                         <label class="form-label">ADDRESS</label>
-                                        <input type="text" class="form-control" name="address" value="<?php echo $address; ?>" required>
+                                        <input type="text" class="form-control" name="address" value="<?php echo isset($fetch_cust_info['address']) ? htmlspecialchars($fetch_cust_info['address']) : 'N/A'; ?>" required>
                                     </div>
 
                                     <div class="mb-3">
                                         <label class="form-label">SOCIALS</label>
-                                        <input type="url" class="form-control" name="socials" value="<?php echo $socials; ?>">
+                                        <input type="url" class="form-control" name="socials" value="<?php echo isset($fetch_cust_info['socials']) ? htmlspecialchars($fetch_cust_info['address']) : 'N/A'; ?>">
                                     </div>
 
                                     <div class="row mb-4">

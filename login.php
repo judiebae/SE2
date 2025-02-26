@@ -1,6 +1,13 @@
 <?php
  
+//  session_start();
+ 
  include("connect.php");
+
+ if (isset($_SESSION['login_error'])) {
+    echo "<div class='alert alert-danger'>" . $_SESSION['login_error'] . "</div>";
+    unset($_SESSION['login_error']);
+}
 
  if ($_SERVER["REQUEST_METHOD"] == "POST") {
    if (isset($_POST['action'])) {
@@ -73,11 +80,12 @@
 
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['user_id'] = $user['id']; 
-        $_SESSION['logged_in'] = true;
         header("Location: profile.php");
         exit();
     } else {
-        echo "Invalid email or password.";
+        $_SESSION['login_error'] = "Invalid email or password.";
+        header("Location: login.php");
+        exit();
     }
  }
 
