@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 
-    <link rel="stylesheet" href="abouts.css">
-    <title>Joanne Joaquin</title>
+    <link rel="stylesheet" href="aboutUs.css">
+    <title>About Adorafur</title>
 </head>
 <body>
 
@@ -19,14 +19,14 @@
 
             <div class="carousel-container">
                 <div id="carouselExampleCaptions" class="carousel slide">
-                <div class="carousel-inner">
+                <div class="carousel-inner" id="first-carousel">
                     <div class="carousel-item active">
                         <h5>VISION</h5>
-                        <p>Our mission is to provide convenient, easy access services and products a pet parent would need for their pets. From boarding, grooming, transport service and pet supplies. We aim to be a reputable and reliable company that gives back and gets involved in pet welfare.</p>        
+                        <p>To be the industry experts and number one choice for pet parents in Metro Manila. We will achieve this through dedication of our professional, knowledgeable, and experienced staff, providing added value to our services.</p>
                     </div>
                     <div class="carousel-item">
                         <h5>MISSION</h5>
-                        <p>Our mission is to provide convenient, easy access services and products a pet parent would need for their pets. From boarding, grooming, transport service and pet supplies. We aim to be a reputable and reliable company that gives back and gets involved in pet welfare.</p>
+                        <p>Our mission is to provide convenient, easy access services and products a pet parent would need for their pets. From boarding, grooming, transport service and pet supplies. We aim to be a reputable and reliable company that gives back and gets involved in pet welfare.</p>        
                     </div>
                     <div class="carousel-item">
                         <h5>GOAL</h5>
@@ -70,7 +70,22 @@
 
             </div>
             <div class="hr-img">
-                <img src="AboutUs-Pics/aboutUs_dog.jpg" alt="">
+                <div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner"id="hr-pics">
+                    <div class="carousel-item active">
+                    <img src="AboutUs-Pics/carousel-1.png" class="d-block" alt="...">
+                    </div>
+                    <div class="carousel-item">
+                    <img src="AboutUs-Pics/carousel-2.png" class="d-block" alt="...">
+                    </div>
+                    <div class="carousel-item">
+                    <img src="AboutUs-Pics/carousel-3.png" class="d-block" alt="...">
+                    </div>
+                    <div class="carousel-item">
+                    <img src="AboutUs-Pics/carousel-4.png" class="d-block" alt="...">
+                    </div>
+                </div>
+                </div>
             </div>
         </div>
     </div>
@@ -104,7 +119,7 @@
             <h1> WE'RE HERE FOR YOUR PETS! </h1>
             <p>Visit us Monday to Saturday, 10AM - 7PM. We can't wait to care for your furry friends</p>
             <div class="gstart">
-                <a href="#learnm"><h2 class="gstart"> Learn More </h2></a>
+                <a href="home.php"><h2 class="gstart"> Learn More </h2></a>
             </div>
         </div>
     </div>

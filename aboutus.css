@@ -18,9 +18,9 @@
 
 }
 
-/* .about{
+.about{
     margin-top: 154px;
-} */
+}
 
 
 .whiteline {
@@ -32,13 +32,20 @@
     padding: 5%;
 }
 
-.carousel-inner{
+#first-carousel{
     background-color: #FFF;
     align-content: center;
     justify-content: center;
     text-align: center;
     padding: 5%;
-    height: 50vh;
+    height: 60vh;
+}
+
+#hr-pics{
+    align-content: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
 }
 
 .carousel-inner h5{
@@ -155,7 +162,7 @@
     display: flex;
     flex: 2;
     max-width: 30%;
-    max-height: 25%;
+    height: auto;
     border-radius: 2rem;
 }
 

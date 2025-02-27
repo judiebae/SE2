@@ -3,121 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="draft.css">
+    <title>Transparent Table</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=1470');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
 
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .glass-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-table th {
+            background-color: rgba(255, 255, 255, 0.3);
+            color: #333;
+            font-weight: 600;
+            text-align: left;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-table td {
+            padding: 12px 16px;
+            color: #333;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .glass-table tr:hover td {
+            background-color: rgba(255, 255, 255, 0.4);
+            transition: background-color 0.3s ease;
+        }
+
+        @media (max-width: 600px) {
+            .glass-table th, 
+            .glass-table td {
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- pet-modal.php -->
-<div class="modal-overlay">
-  <div class="pet-modal">
-    <div class="modal-header">
-      <h2>Pet/s</h2>
-      <button class="close-btn">&times;</button>
+    <div class="container">
+        <table class="glass-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                // Sample data array
+                $users = [
+                    ['id' => 1, 'name' => 'John Doe', 'email' => 'john@example.com', 'status' => 'Active'],
+                    ['id' => 2, 'name' => 'Jane Smith', 'email' => 'jane@example.com', 'status' => 'Inactive'],
+                    ['id' => 3, 'name' => 'Robert Johnson', 'email' => 'robert@example.com', 'status' => 'Active'],
+                    ['id' => 4, 'name' => 'Emily Davis', 'email' => 'emily@example.com', 'status' => 'Pending'],
+                    ['id' => 5, 'name' => 'Michael Wilson', 'email' => 'michael@example.com', 'status' => 'Active'],
+                ];
+
+                // Generate table rows
+                foreach ($users as $user) {
+                    echo "<tr>";
+                    echo "<td>{$user['id']}</td>";
+                    echo "<td>{$user['name']}</td>";
+                    echo "<td>{$user['email']}</td>";
+                    echo "<td>{$user['status']}</td>";
+                    echo "</tr>";
+                }
+                ?>
+            </tbody>
+        </table>
     </div>
-    
-    <form class="pet-form" method="post" enctype="multipart/form-data">
-      <div class="form-grid">
-        <div class="left-column">
-          <div class="form-group">
-            <label>NAME</label>
-            <input type="text" name="pet_name" required>
-          </div>
-
-          <div class="form-group">
-            <label>PET SIZE</label>
-            <div class="radio-group">
-              <label>
-                <input type="radio" name="pet_size" value="small_dog">
-                Small Dog
-              </label>
-              <label>
-                <input type="radio" name="pet_size" value="large_dog">
-                Large Dog
-              </label>
-              <label>
-                <input type="radio" name="pet_size" value="regular_dog">
-                Regular Dog
-              </label>
-              <label>
-                <input type="radio" name="pet_size" value="regular_cat">
-                Regular Cat
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>BREED</label>
-            <input type="text" name="breed" placeholder="Type Breed Here">
-          </div>
-
-          <div class="form-group">
-            <label>AGE</label>
-            <input type="text" name="age" placeholder="Type Age Here">
-          </div>
-
-          <div class="form-group">
-            <label>GENDER</label>
-            <div class="radio-group">
-              <label>
-                <input type="radio" name="gender" value="male">
-                Male
-              </label>
-              <label>
-                <input type="radio" name="gender" value="female">
-                Female
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>DESCRIPTION</label>
-            <textarea name="description" placeholder="e.x. White Spots"></textarea>
-          </div>
-        </div>
-
-        <div class="right-column">
-          <div class="form-group">
-            <label>PET PROFILE PHOTO</label>
-            <input type="file" name="pet_photo" class="file-upload">
-          </div>
-
-          <div class="form-group">
-            <label>VACCINATION STATUS</label>
-            <div class="radio-group">
-              <label>
-                <input type="radio" name="vaccination_status" value="vaccinated">
-                Vaccinated
-              </label>
-              <label>
-                <input type="radio" name="vaccination_status" value="not_vaccinated">
-                Not Vaccinated
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>DATE ADMINISTERED</label>
-            <input type="date" name="date_administered">
-          </div>
-
-          <div class="form-group">
-            <label>EXPIRY DATE</label>
-            <input type="date" name="expiry_date">
-          </div>
-
-          <div class="form-group">
-            <label>SPECIAL INSTRUCTIONS</label>
-            <textarea name="special_instructions" placeholder="e.x. Medications"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="submit-btn">Save and Go Back</button>
-      </div>
-    </form>
-  </div>
-</div>
 </body>
 </html>
+

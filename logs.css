@@ -61,4 +61,16 @@
     border: solid 2px #FFF;
     opacity: 1;
   }
+
+
+#firstName,
+#lastName,
+#email,
+#contactNumber,
+#password,
+#repeatPassword{
+  color: #421D11;
+  border: solid 1px #421D11;
+  text-align: left;
+}
   

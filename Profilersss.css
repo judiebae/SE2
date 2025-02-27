@@ -257,13 +257,16 @@ textarea {
     font-size: 20px;
 }
 
-.regPet{
+.rPet{
+    text-align: center;
+}
+.regPet, #regPet{
     text-decoration: underline;
     margin: 0;
     text-align: center;
     color: #A6A6A6;
-    justify-content: flex-end; 
     align-items: center;
+    width: auto;
 }
 
 .petDeets {
@@ -377,6 +380,11 @@ input[type="radio"] {
 
 }
 
+#mod-header{
+    color: #AB643C;
+    font-weight: bold;
+}
+
 #mod-body p{
     color: #421D11;
 }
@@ -385,10 +393,18 @@ input[type="radio"] {
     border-top: none;
 }
 
+#ccbuttons{
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
 #cancel-but{
     border: 1px solid #421D11;
     color: #421D11;
     border-radius: 5px;
+    width: auto;
+    padding: 5px;
 }
 
 #confirm-but{
@@ -396,6 +412,9 @@ input[type="radio"] {
     background-color: #563727;
     border: none;
     border-radius: 5px;
+    width: auto;
+    padding: 5px;
+
 }
 
 .form-grid {
@@ -505,4 +524,14 @@ textarea {
     .name{
         flex-direction: column;
     }
+}
+
+
+#editProfile,
+#req-to-cancel,
+#process-cancel,
+#reg-pet,
+#view-and-edit,
+#del-modal{
+    background-color: #ffffff;
 }

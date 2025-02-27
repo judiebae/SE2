@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="homers.css">
+    <link rel="stylesheet" href="home1.css">
     <script src="script.js" defer></script>
     <title>Adorafur Happy Stay</title>
 </head>
@@ -14,14 +14,11 @@
 
 
     <div class="home">
-    <div class="gradient">
-        <div class="rectangle-4"></div>
-        <div class="rectangle-7"></div>
-    </div>
-
-    
+        <div class="gradient">
+            <div class="rectangle-4"></div>
+            <div class="rectangle-7"></div>
+        </div>
         
-        <!-- Slideshow Section -->
         <div class="home-1">
             <div class="welcome-to-text">
                 <div class="welcome-text">WELCOME TO</div>
@@ -45,8 +42,8 @@
             </div>
         </div>
 
-        <!-- Second Scroll Section -->s
-        <div class="second-scroll" >
+        <!-- Second Scroll Section -->
+        <div class="second-scroll" id="s-scroll">
 
             <div class="group-holder" id = "second-scroll"></div>
 
@@ -74,9 +71,11 @@
                     </div></a>
                 </div><!-- containter1 -->
             </div><!-- second scroll title -->
+
         </div><!-- second scroll -->
 
         <div class="incluPerks" id = "inclusions">
+        <img class="yellow-paw" id="" src="Home-Pics/yellow-paw.png" alt="">
             <div class="inclusAndPerks1">
                 <div class="iap-text">
                     <img src="hand.png" alt="" class="hand">
@@ -94,17 +93,17 @@
             <div id="learnm" class="inclusAndPerks2">
                 <div class="inclusions">
                     <div class="inclu-img">
-                        <img src="meow.png" alt="" class="meow">
+                        <img src="Home-Pics/meow.png" alt="" class="meow">
                     </div>
                     <div class="inclu-text">
                         <h6 class="inclus"> INCLUSIONS </h6>
                         <div class="inclu1">
                             <div class="inclu1-1">
-                                <img src="Inclusions-and-Perks/daily_video_icon.png" alt="">
+                                <img src="Home-Pics/daily_video_icon.png" alt="">
                                 <p>Daily video and photo updates</p>
                             </div>
                             <div class="inclu1-2">
-                                <img src="Inclusions-and-Perks/ac_icon.png" alt="">
+                                <img src="Home-Pics/ac_icon.png" alt="">
                                 <p>Airconditioned facility</p>
                             </div>
                         </div>
@@ -125,14 +124,12 @@
                             </div>
                             <div class="inclu3-2">
                                 <img src="Home-Pics/vit_and_med_icon.png" alt="">
-                                <p>Vitamin and Medicin administrations (as needed)</p>
+                                <p>Vitamin and Medicine administrations (as needed)</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            
-               
-
+                            
                 <div class="perks">
                     <div class="perks1"><img src="Home-Pics/PERKS2.png" alt=""></div>
                     <div class="perk-text">
@@ -182,9 +179,11 @@
                     DISCOVER OUR EXCLUSIVE MEMBERSHIP OFFERS
                 </div><!-- third-section-title -->
                 <center>
-                    <div class = "third-section-desc" id = "third-sec-titledesc" style = "text-shadow: 4px 4px 12px #e9e0d9, 2px 2px 10px #e9e0d9;
-">
-                Choose from Gold, Silver, or Regular memberships to enjoy tailored perks and savings on your pet’s stay at our luxury hotel. Take a look today and find the perfect plan for your furry friend!
+                    <div class = "third-section-desc" id = "third-sec-titledesc" style = "text-shadow: 4px 4px 12px #e9e0d9, 2px 2px 10px #e9e0d9;">
+                   <strong>   The validity of all membership offers is one year.</strong><br>
+                    Choose from Gold, Silver, or Regular memberships to enjoy tailored perks and savings on your pet’s stay at our luxury hotel. Take a look today and find the perfect plan for your furry friend!
+                
+                <br>Upgrade your membership during your next visit to our hotel.
                     </div>
                 </center><!-- third-section-desc -->
             </div><!-- third-section-1 -->
@@ -224,8 +223,8 @@
                     <div class = "member-title" style = "color:#cca200;;">GOLD</div>
                 <div class = "member-desc">
                     <ul>
-                    <li>20% discount on all reservations and services.</li>
-                    <li>Complimentary daycare service for one day each month.</li>
+                    <li>10% discount on all reservations and services.</li>
+                    <li>Priority customer support with exclusive offers.</li>
                     </ul>
 
                 <div class = "member-price" style = "margin-top: 40px">₱ xxx.xx</div>
@@ -238,22 +237,24 @@
                     <div class = "member-title" style = "color: #7590af;">PLATINUM</div>
                 <div class = "member-desc">
                     <ul>
-                    <li>Access to basic pet hotel and daycare reservations</li>
-                    <li>Pay-as-you-go pricing with no discounts.</li>
+                    <li>20% discount on all reservations and services.</li>
+                    <li>Complimentary daycare service for one day each month.</li>
                     </ul>
 
-                <div class = "member-price">₱ xxx.xx</div>
+                <div class = "member-price" style = "margin-top: 40px">₱ xxx.xx</div>
                 
                 </div><!-- member desc--></center>
                 </div><!-- cards4 -->
 
-            </div><!-- third section 2-->
-
+s
 
         </div><!--third-section-->
     </div><!--Home-->
 
-    <div class="time-sec">        
+    
+    <div class="time-sec">  
+    <img src="Home-Pics/second-cloud.png" alt="">
+        <div class="time-sec-desc">
         <div class="service-box daycare">
             <div class="content">
                 <div class="icon-box">
@@ -279,6 +280,7 @@
                     <p class="default-txt">From playful days to peaceful nights, we're here to make sure they feel right at home, around the clock!</p>
                 </div>
             </div>
+        </div>
         </div>
     </div>        
 

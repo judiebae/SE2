@@ -1,22 +1,17 @@
-
 #header{
     z-index: 100;
-    pointer-events: none;
+    position:fixed;
     width: 100%;
 }
 
 body{
     display: flex;
     flex-direction: column;
-    /* justify-content: flex-start; */
+    justify-content: flex-start; /* Aligns content at the top */
     
-    /* min-height: 100vh; */
+    min-height: 100vh;
 }
-/* 
-.home{
-  margin-top: 154px;
-  
-} */
+
 
 .welcome-to-text {
     margin-top: 0px;
@@ -33,9 +28,7 @@ body{
     justify-content: center; /* Centers content vertically */
     align-items: center; /* Centers content horizontally */
     text-align: center; /* Ensures multi-line text is centered */
-    padding: 10px; /* Adds spacing for smaller screens */
-    
-   
+    padding: 10px; 
 }
 
 /* Responsive text size */
@@ -228,7 +221,7 @@ body{
 }
 
 /* Second Scroll Section */
-.second-scroll {
+.second-scroll{
     height: 100%;
     position: relative;
     overflow: hidden;
@@ -437,6 +430,7 @@ body{
     text-align: center;
 }
 
+
 /* Description Styling */
 .third-section-desc {
     color: #421d11; 
@@ -448,6 +442,26 @@ body{
     max-width: 1600px;
     margin: 15px auto;
 }
+
+.membership-section {
+    text-align: center;
+    padding: 20px;
+}
+
+.membership-title {
+    font-size: clamp(32px, 5vw, 55px); /* Adjusts dynamically between 32px and 55px */
+    font-weight: 500;
+    color: #ab643c;
+}
+
+.membership-description {
+    font-size: clamp(28px, 2.5vw, 28px); /* Fixed at 18px */
+    color: #5c3a22; /* Adjusted to match the softer text color */
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6; /* Improve readability */
+}
+
 
 
 /* Responsive Adjustments */
@@ -600,6 +614,7 @@ body{
 
 .incluPerks{
     background-color: #FAF1EA;
+    border-radius: 10px;
 }
 
 .inclusAndPerks1{
@@ -698,12 +713,15 @@ body{
     flex-wrap: wrap; /* Allows content to wrap on smaller screens */
     width: 100%;
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    
 }
   
 .inclu-img {
     width: 50%;
     box-sizing: border-box;
     background-color: #E0B09D;
+    border-radius: 20px 0 0 0; /* Only top-left corner rounded */
+
 }
   
   .inclu-text {
@@ -716,6 +734,7 @@ body{
     width: 100%; /* Make the image fill its container */
     height: auto; /* Maintain aspect ratio */
     display: block; /* Remove extra space below the image */
+    margin: 8% 0;
   }
   
   /* Inclusions List Styling */
@@ -732,6 +751,7 @@ body{
   .inclu1, .inclu2, .inclu3{
     display: flex; /*  Enable flexbox for the rows */
     margin-bottom: 10px;
+    row-gap: 20px;
   }
   
   .inclu1-1, .inclu1-2, .inclu2-1, .inclu2-2, .inclu3-1, .inclu3-2 {
@@ -792,6 +812,7 @@ body{
     background-color: #E0B09D;
     color: #FFF;
     margin: 0;
+    border-radius: 0 0 20px 20px ;
 }
 
 .perk-text{
@@ -845,6 +866,14 @@ body{
     font-size: 120%;
 }
 
+.perks1, .perks1 img{
+    border-radius: 0 0 0 20px ; /* Only top-left corner rounded */
+}
+
+.perks2, .perks2 img{
+    border-radius: 0 0 20px 0  ; /* Only top-left corner rounded */
+}
+
 .perks1, .perk-text, .perks2 {
     flex: 1; /* Each item will take equal width */
     min-width: 0; /* Prevent overflow issues */
@@ -875,13 +904,24 @@ body{
 
 .time-sec{
     max-width: 100%;
+    width: 100%;
     margin: 0 auto;
     position: relative;
     background-image: url(Home-Pics/slideshow2.png);
-    padding: 5%;
+    /* padding: 5%; */
     background-size: cover;  /* Ensures the image covers the entire section */
     background-position: center;  /* Centers the image */
     background-repeat: no-repeat; /* Prevents tiling */
+}
+
+.time-sec img{
+    width: 100%;
+    object-fit: cover;
+}
+
+.time-sec-desc{
+    padding: 5%;
+    max-width: 100%;
 }
 
 .time-sec::before {
@@ -986,4 +1026,14 @@ body{
     .text-content {
         padding: 15px;
     }
+}
+
+.yellow-paw, #y-paw{
+  position: absolute;
+  height: 304.78px;
+  width: auto;
+  background-size: cover;
+  background-repeat: no-repeat;
+  margin-top: 1500px;
+  margin-left: 1350px;
 }
