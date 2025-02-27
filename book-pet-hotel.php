@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
 
     <!-- Your custom CSS -->
-    <link rel="stylesheet" href="book-pet-hotels.css">
+    <link rel="stylesheet" href="book-pet-hotelss.css">
 
     <!-- jQuery and Bootstrap Bundle (includes Popper) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -18,6 +18,8 @@
 
     <!-- Your custom JavaScript -->
     <script src="booking.js" defer></script>
+
+
 </head>
 
 <body>
@@ -151,27 +153,57 @@
 
                     </div>
                 </div>
-                        <div class="book-1">
-                            <div class="book-label">
-                                <div class="client">
-                                    <b>Client name</b><br>
-                                    <span class="client-email">Client Email</span>
-                                </div>
-                                <div class = pet-1>
-                                    <div class = "pets"><b>Pet/s</b></div>
-                                    <hr class="hr-pet" id="flex">
-                                        <div class = pet-2>
-                                            <div class = "labels"><b>NAME</b></div>
-                                            <div class = "labels"><b>BREED</b></div>
-                                            <div class = "labels"><b>AGE</b></div>
-                                            <div class = "labels"><b>GENDER</b></div>
-                                            <div class = "labels"><b>SIZE</b></div>
-                                            <div class = "labels"><b>PRICE</b></div>
-                                        </div>
-                                    <hr class="hr-pet" id="flex">
-                                </div>
-                            </div>
+                <div class="book-1">
+                    <div class="book-label">
+                        <div class="client">
+                            <b>Client name</b><br>
+                            <span class="client-email">Client Email</span>
                         </div>
+                        <div class="pet-1">
+                            <div class="pets"><b>Pet/s</b></div>
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        
+                                        <th>NAME</th>
+                                        <th>BREED</th>
+                                        <th>AGE</th>
+                                        <th>GENDER</th>
+                                        <th>SIZE</th>
+                                        <th>PRICE</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    // Sample pet data array
+                                    $pets = [
+                                        ['name' => 'Max', 'breed' => 'Golden Retriever', 'age' => '4 years', 'gender' => 'Male', 'size' => 'Large', 'price' => '₱3500.00'],
+                                        ['name' => 'Luna', 'breed' => 'Poodle', 'age' => '1.5 years', 'gender' => 'Female', 'size' => 'Medium', 'price' => '₱2500.00'],
+                                        ['name' => 'Buddy', 'breed' => 'Labrador', 'age' => '3 years', 'gender' => 'Male', 'size' => 'Large', 'price' => '₱3000.00'],
+                                        ['name' => 'Daisy', 'breed' => 'Beagle', 'age' => '2 years', 'gender' => 'Female', 'size' => 'Small', 'price' => '₱2000.00'],
+                                        ['name' => 'Rocky', 'breed' => 'Bulldog', 'age' => '5 years', 'gender' => 'Male', 'size' => 'Medium', 'price' => '₱4000.00'],
+                                    ];
+
+                                    // Generate table rows
+                                    foreach ($pets as $pet) {
+                                        echo "<tr>";
+                                        
+                                        echo "<td data-label='Name'>{$pet['name']}</td>";
+                                        echo "<td data-label='Breed'>{$pet['breed']}</td>";
+                                        echo "<td data-label='Age'>{$pet['age']}</td>";
+                                        echo "<td data-label='Gender'>{$pet['gender']}</td>";
+                                        echo "<td data-label='Size'>{$pet['size']}</td>";
+                                        echo "<td data-label='Price'>{$pet['price']}</td>";                                        
+                                        echo "</tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </div><!-- /.main-container -->
         </div><!-- /.main -->
 
