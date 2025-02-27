@@ -1,9 +1,40 @@
+<?php
+
+include ("../connect.php");
+
+$reservations = mysqli_query($conn, "SELECT 
+                                        b.booking_id AS b_id,
+                                        p.pet_name AS p_pet,
+                                        p.pet_breed AS p_breed,
+                                        p.pet_size AS p_size,
+                                        CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS owner_name,
+                                        c.customer_contact_number AS owner_num,
+                                        s.service_name AS s_service,
+                                        pay.payment_status AS pay_status,
+                                        DATE(b.booking_check_in) AS b_in,
+                                        DATE(b.booking_check_out) AS b_out
+                                    FROM booking b
+                                    JOIN pet p ON b.pet_id = p.pet_id
+                                    JOIN customer c ON p.customer_id = c.customer_id
+                                    JOIN service s ON b.service_id = s.service_id
+                                    JOIN payment pay ON b.payment_id = pay.payment_id
+                                    WHERE b.booking_status <> 'Cancelled'
+                                    ORDER BY 
+                                        CASE s
+                                            WHEN b.booking_check_in >= CURDATE() THEN 1  -- Future & today’s bookings first
+                                            ELSE 2  -- Past bookings last
+                                        END,
+                                        b.booking_check_in ASC;");
+?>
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin_navbar1.css">
+    <link rel="stylesheet" href="ad_navbar.css">
+    <link rel="stylesheet" href="ad_home.css">
+
     <title>Admin Homepage</title>
 </head> 
 
@@ -32,70 +63,63 @@
 
     </nav>
 
+    
     <!-- HOME PAGE -->
     <div class="panel-container">
-        <div class="admin-panel-text">Admin Panel</div>
-        <div class="id-text">ID</div>
-        <div class="pet-text">Pet</div>
-        <div class="service-text">Service</div>
-        <div class="name-text">Name</div>
-        <div class="payment-text">Payment</div>
+        <div class="head">
+            <h6  class="admin-panel-text">Admin Panel</h6>
+            <!-- Real-time clock -->
+            <div class="time-text" id="real-time-clock">Loading...</div>
+            
+        </div>       
         
-        <!-- Real-time clock -->
-        <div class="time-text" id="real-time-clock">Loading...</div>
         <div class="date-and-day">Loading date...</div>
-        <div class="date-text">Date</div>
-        <div class="line-1"></div>
 
-        <!-- Pet Hotel Booking -->
-        <div class="pet-hotel-frame">
-            <div class="pet-hotel-color"></div>
-            <div class="id-1">P045849</div>
-            <div class="pet-name-1">Eddie</div>
-            <div class="pet-breed-1">Dog, Shih tzu</div>
-            <div class="name-1">Han Bascao</div>
-            <div class="number-1">Viber 0994 234 2413</div>
-            <div class="hotel">Pet Hotel</div>
-            <div class="dp-1">Down Payment</div>
-            <div class="ellipse-1"></div>
-            <div class="name-12">
-                <span>
-                    <span class="name-12-span">Check-in:</span>
-                    <span class="name-12-span2">09-05-24</span>
-                </span>
-            </div>
-            <div class="number-12">
-                <span>
-                    <span class="number-12-span">Check-out:</span>
-                    <span class="number-12-span2">09-10-24</span>
-                </span>
-            </div>
-        </div>
+        <table class="reservations">
+            <?php
 
-        <!-- Daycare Booking -->
-        <div class="daycare-frame">
-            <div class="daycare-color"></div>
-            <div class="id-1">P045813</div>
-            <div class="pet-name-1">K.C.</div>
-            <div class="pet-breed-1">Dog, Shih tzu</div>
-            <div class="name-1">Jude Flores</div>
-            <div class="number-13">Instagram 0994 234 2413</div>
-            <div class="hotel">Daycare</div>
-            <div class="dp-1">Full Payment</div>
-            <div class="ellipse-12"></div>
-            <div class="name-13">
-                <span class="daycare-check-in">
-                    <span class="name-13-span">Check-in:</span>
-                    <span class="name-13-span2">09-05-24</span>
-                </span>
-            </div>
-            <div class="number-14">
-                <span>
-                    <span class="number-14-span">Check-out:</span>
-                    <span class="number-14-span2">09-10-24</span>
-                </span>
-            </div>
-        </div>
+                if (mysqli_num_rows($reservations)>0) {
+                echo '
+                <thead class="attributes">
+                        <th class="id">ID</th>
+                        <th class="pet">Pet</th>
+                        <th class="service">Service</th>
+                        <th class="name">Name</th>
+                        <th class="payment">Payment</th>
+                        <th class="date">Date</th>
+                </thead>
+                <tbody class="deets">
+            ';
+            while ($fetch_reservations=mysqli_fetch_assoc($reservations)){
+            ?>
+            
+                <tr class ="row" >
+                    <td class="deets-id <?php echo strtolower($fetch_reservations['s_service']) === 'pet hotel' ? 'row-hotel' : 'row-daycare'; ?>"><?php echo $fetch_reservations['b_id'] ?></td>
+                    <td class="deets-pet">
+                        <span class="pet-name"><?php echo $fetch_reservations['p_pet'] . "<br> </span> <span class='pet-breed'>" . 
+                                                $fetch_reservations['p_breed'] . ", " .   
+                                                $fetch_reservations['p_size'];  ?> </span></td>
+                    <td class="deets-service"><?php echo $fetch_reservations['s_service'] ?></td>
+                    <td class="deets-name"><span class="owner"><?php echo $fetch_reservations['owner_name'] ."<br> </span> <span class='owner-num'>". 
+                                                        $fetch_reservations['owner_num']?> <span> </td>
+                    <td class="deets-payment"><span class="payment-dot <?php echo strtolower($fetch_reservations['pay_status']) === 'down payment' ? 'payment-down' : 'payment-full';?>" ></span><?php  echo $fetch_reservations['pay_status'] ?></td>
+                    <td class="deets-date">
+                       
+                            <span class="name-12-span">Check-in:</span>
+                            <span class="name-12-span2"><?php echo $fetch_reservations['b_in'] ?></span>
+                            <br>
+                            <span class="number-12-span">Check-out:</span>
+                            <span class="number-12-span2"><?php echo $fetch_reservations['b_out'] ?></span>
+                        
+                    </td>
+                </tr>
+            <?php }
+            }
+            ?>
+            </tbody>
+        </table>
+
+        
     </div>
 
     <script src="admin.js"></script>
