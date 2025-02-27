@@ -1,0 +1,162 @@
+<?php
+// Database connection
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "fur_a_paw_intments";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name = $_POST['name'];
+    $size = $_POST['size'];
+    $breed = $_POST['breed'];
+    $age = $_POST['age'];
+    $gender = $_POST['gender']; // Added gender field
+    $description = $_POST['description'];
+    $vaccination_status = $_POST['vaccination_status'];
+    $date_administered = !empty($_POST['date_administered']) ? $_POST['date_administered'] : NULL;
+    $expiry_date = !empty($_POST['expiry_date']) ? $_POST['expiry_date'] : NULL;
+    $instructions = $_POST['instructions'];
+
+    // Create upload directory if not exists
+    $target_dir = "uploads/";
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
+
+    // Profile Photo Upload
+    $profile_photo = NULL;
+    if (!empty($_FILES['profile_photo']['name'])) {
+        $profile_photo = $target_dir . time() . "_" . basename($_FILES['profile_photo']['name']);
+        move_uploaded_file($_FILES['profile_photo']['tmp_name'], $profile_photo);
+    }
+
+    // Vaccination File Upload
+    $vaccination_file = NULL;
+    if (!empty($_FILES['vaccination_file']['name'])) {
+        $vaccination_file = $target_dir . time() . "_" . basename($_FILES['vaccination_file']['name']);
+        move_uploaded_file($_FILES['vaccination_file']['tmp_name'], $vaccination_file);
+    }
+
+    // Insert into Database
+    $stmt = $conn->prepare("INSERT INTO pet (pet_name, pet_size, pet_breed, pet_age, pet_gender, pet_description, pet_profile_photo, pet_vaccination_status, pet_vaccination_card, pet_vaccination_date, pet_vaccination_expiry, pet_special_instruction)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssisissssss", $name, $size, $breed, $age, $gender, $description, $profile_photo, $vaccination_status, $vaccination_file, $date_administered, $expiry_date, $instructions);
+
+    if ($stmt->execute()) {
+        echo "<script>
+                alert('Pet details saved successfully!');
+                window.location.href='pet.php';
+              </script>";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    $stmt->close();
+}
+
+$conn->close();
+?>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Details Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#petModal">Add Pet</button>
+    </div>
+
+    <div class="modal fade" id="petModal" tabindex="-1" aria-labelledby="petModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pet Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="pet.php" method="POST" enctype="multipart/form-data">
+                        <label class="form-label">Name:</label>
+                        <input type="text" name="name" class="form-control" required>
+
+                        <label class="form-label mt-2">Pet Size:</label>
+                        <div class="d-flex">
+                            <div class="form-check me-3">
+                                <input type="radio" name="size" value="Small Dog" class="form-check-input" required> Small Dog
+                            </div>
+                            <div class="form-check me-3">
+                                <input type="radio" name="size" value="Regular Dog" class="form-check-input" required> Regular Dog
+                            </div>
+                            <div class="form-check me-3">
+                                <input type="radio" name="size" value="Large Dog" class="form-check-input" required> Large Dog
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" name="size" value="Regular Cat" class="form-check-input" required> Regular Cat
+                            </div>
+                        </div>
+
+                        <label class="form-label mt-2">Breed:</label>
+                        <input type="text" name="breed" class="form-control" required>
+
+                        <label class="form-label mt-2">Age:</label>
+                        <input type="number" name="age" class="form-control" required>
+
+                        <label class="form-label mt-2">Gender:</label>
+                        <div class="d-flex">
+                            <div class="form-check me-3">
+                                <input type="radio" name="gender" value="Male" class="form-check-input" required> Male
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" name="gender" value="Female" class="form-check-input" required> Female
+                            </div>
+                        </div>
+
+                        <label class="form-label mt-2">Description:</label>
+                        <textarea name="description" class="form-control"></textarea>
+
+                        <label class="form-label mt-2">Profile Photo:</label>
+                        <input type="file" name="profile_photo" class="form-control" accept="image/*">
+
+                        <label class="form-label mt-2">Vaccination Proof:</label>
+                        <input type="file" name="vaccination_file" class="form-control" accept="image/*,application/pdf">
+
+                        <label class="form-label mt-2">Vaccination Status:</label>
+                        <div class="d-flex">
+                            <div class="form-check me-3">
+                                <input type="radio" name="vaccination_status" value="Vaccinated" class="form-check-input" required> Vaccinated
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" name="vaccination_status" value="Not Vaccinated" class="form-check-input" required> Not Vaccinated
+                            </div>
+                        </div>
+
+                        <label class="form-label mt-2">Date Administered:</label>
+                        <input type="date" name="date_administered" class="form-control">
+
+                        <label class="form-label mt-2">Expiry Date:</label>
+                        <input type="date" name="expiry_date" class="form-control">
+
+                        <label class="form-label mt-2">Special Instructions:</label>
+                        <textarea name="instructions" class="form-control"></textarea>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-dark">Save and Go Back</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
