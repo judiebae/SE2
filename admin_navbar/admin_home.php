@@ -20,7 +20,7 @@ $reservations = mysqli_query($conn, "SELECT
                                     JOIN payment pay ON b.payment_id = pay.payment_id
                                     WHERE b.booking_status <> 'Cancelled'
                                     ORDER BY 
-                                        CASE s
+                                        CASE 
                                             WHEN b.booking_check_in >= CURDATE() THEN 1  -- Future & today’s bookings first
                                             ELSE 2  -- Past bookings last
                                         END,
@@ -32,7 +32,7 @@ $reservations = mysqli_query($conn, "SELECT
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="ad_navbar.css">
+    <link rel="stylesheet" href="admin_navbarq.css">
     <link rel="stylesheet" href="ad_home.css">
 
     <title>Admin Homepage</title>
