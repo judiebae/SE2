@@ -6,22 +6,37 @@
     --coral-text: #D98D62;
 }
 
-body {
+* {
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
     font-family: 'Ballotadmu-Medium', sans-serif;
     background-color: rgba(0, 0, 0, 0.5);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px;
 }
 
+.payment-modal,
+.success-content {
+    width: 1000px;
+    max-width: 1000px;
+    height: 700px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Payment Modal Styling */
 .payment-modal {
     background-color: var(--primary-bg);
     border-radius: 24px;
     padding: 30px;
-    width: 1000px;
     position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -96,18 +111,17 @@ h1 {
 }
 
 .qr-code1 {
-    width: 297.32px;
-    height: 350px;
-    position: relative;
+    width: 100%;
+    height: auto;
     object-fit: cover;
 }
 
 .qr-code2 {
-    width: 231.48px;
-    height: 350px;
-    position: relative;
+    width: 100%;
+    height: auto;
     object-fit: cover;
 }
+
 .payment-form {
     margin-top: 20px;
 }
@@ -154,7 +168,7 @@ h1 {
     margin-top: 20px;
 }
 
-/* Success Modal Styles */
+/* Success Modal Styling */
 .success-modal {
     display: none;
     position: fixed;
@@ -170,7 +184,7 @@ h1 {
 
 .success-content {
     background: var(--primary-bg);
-    width: 900px;
+    width: 1000px;
     height: 700px;
     border-radius: 24px;
     padding: 30px;
@@ -213,4 +227,82 @@ h1 {
     text-align: center;
     margin-top: 20px;
     font-size: 14px;
+}
+
+/* Media Queries for Responsiveness */
+
+/* For smaller screens like tablets and below */
+@media screen and (max-width: 1024px) {
+    .payment-modal {
+        width: 90%; /* Take up 90% of the screen */
+        grid-template-columns: 1fr; /* Stack content vertically */
+        height: auto;
+    }
+
+    .qr-codes {
+        grid-template-columns: 1fr; /* Stack QR codes vertically */
+    }
+
+    .qr-code1, .qr-code2 {
+        width: 80%; /* Adjust the size */
+        margin: 0 auto;
+    }
+
+    .complete-btn {
+        float: none; /* Center the button */
+        width: 100%; /* Make the button full-width */
+    }
+}
+
+/* For mobile devices */
+@media screen and (max-width: 768px) {
+    .payment-modal {
+        width: 95%; /* Make the modal width smaller */
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 28px; /* Reduce the font size for smaller screens */
+    }
+
+    .subtitle, .transaction-number, .pet-name {
+        font-size: 14px; /* Adjust font size */
+    }
+
+    .details-row {
+        grid-template-columns: 1fr; /* Stack the details vertically */
+    }
+
+    .qr-code1, .qr-code2 {
+        width: 90%; /* Adjust QR codes for mobile */
+    }
+
+    .success-content {
+        width: 95%; /* Adjust the success modal size */
+        padding: 20px;
+    }
+
+    .success-content h2 {
+        font-size: 30px; /* Adjust the font size for success modal */
+    }
+}
+
+/* For extra small screens like phones in portrait mode */
+@media screen and (max-width: 480px) {
+    h1 {
+        font-size: 24px; /* Adjust title font size */
+    }
+
+    .success-content h2 {
+        font-size: 24px; /* Adjust title font size for success modal */
+    }
+
+    .complete-btn {
+        font-size: 14px; /* Adjust button size */
+    }
+
+    .payment-modal, .success-content {
+        width: 100%; /* Take up full screen width */
+        padding: 10px;
+    }
 }
