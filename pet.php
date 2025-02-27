@@ -1,4 +1,11 @@
 <?php
+session_start(); // Start the session to access user info
+
+// Redirect if not logged in
+if (!isset($_SESSION['customer_id'])) {
+    die("<script>alert('Please log in first!'); window.location.href='lag.php';</script>");
+}
+
 // Database connection
 $servername = "localhost";
 $username = "root";
@@ -11,16 +18,24 @@ if ($conn->connect_error) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = $_POST['name'];
+    // Get logged-in user ID
+    $customer_id = $_SESSION['customer_id']; 
+
+    // Validate required fields
+    if (!isset($_POST['name'], $_POST['size'], $_POST['breed'], $_POST['age'], $_POST['gender'], $_POST['vaccination_status'])) {
+        die("<script>alert('Please fill all required fields!');</script>");
+    }
+
+    $name = htmlspecialchars($_POST['name'], ENT_QUOTES, 'UTF-8');
     $size = $_POST['size'];
-    $breed = $_POST['breed'];
-    $age = $_POST['age'];
-    $gender = $_POST['gender']; // Added gender field
-    $description = $_POST['description'];
+    $breed = htmlspecialchars($_POST['breed'], ENT_QUOTES, 'UTF-8');
+    $age = (int)$_POST['age'];
+    $gender = $_POST['gender'];
+    $description = isset($_POST['description']) ? htmlspecialchars($_POST['description'], ENT_QUOTES, 'UTF-8') : null;
     $vaccination_status = $_POST['vaccination_status'];
-    $date_administered = !empty($_POST['date_administered']) ? $_POST['date_administered'] : NULL;
-    $expiry_date = !empty($_POST['expiry_date']) ? $_POST['expiry_date'] : NULL;
-    $instructions = $_POST['instructions'];
+    $date_administered = !empty($_POST['date_administered']) ? $_POST['date_administered'] : null;
+    $expiry_date = !empty($_POST['expiry_date']) ? $_POST['expiry_date'] : null;
+    $instructions = isset($_POST['instructions']) ? htmlspecialchars($_POST['instructions'], ENT_QUOTES, 'UTF-8') : null;
 
     // Create upload directory if not exists
     $target_dir = "uploads/";
@@ -29,23 +44,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Profile Photo Upload
-    $profile_photo = NULL;
+    $profile_photo = null;
     if (!empty($_FILES['profile_photo']['name'])) {
         $profile_photo = $target_dir . time() . "_" . basename($_FILES['profile_photo']['name']);
         move_uploaded_file($_FILES['profile_photo']['tmp_name'], $profile_photo);
     }
 
     // Vaccination File Upload
-    $vaccination_file = NULL;
+    $vaccination_file = null;
     if (!empty($_FILES['vaccination_file']['name'])) {
         $vaccination_file = $target_dir . time() . "_" . basename($_FILES['vaccination_file']['name']);
         move_uploaded_file($_FILES['vaccination_file']['tmp_name'], $vaccination_file);
     }
 
     // Insert into Database
-    $stmt = $conn->prepare("INSERT INTO pet (pet_name, pet_size, pet_breed, pet_age, pet_gender, pet_description, pet_profile_photo, pet_vaccination_status, pet_vaccination_card, pet_vaccination_date, pet_vaccination_expiry, pet_special_instruction)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssisissssss", $name, $size, $breed, $age, $gender, $description, $profile_photo, $vaccination_status, $vaccination_file, $date_administered, $expiry_date, $instructions);
+    $stmt = $conn->prepare("INSERT INTO pet (customer_id, pet_name, pet_size, pet_breed, pet_age, pet_gender, pet_description, pet_profile_photo, pet_vaccination_status, pet_vaccination_card, pet_vaccination_date, pet_vaccination_expiry, pet_special_instruction)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("isssissssssss", $customer_id, $name, $size, $breed, $age, $gender, $description, $profile_photo, $vaccination_status, $vaccination_file, $date_administered, $expiry_date, $instructions);
 
     if ($stmt->execute()) {
         echo "<script>
@@ -86,7 +101,7 @@ $conn->close();
                 <div class="modal-body">
                     <form action="pet.php" method="POST" enctype="multipart/form-data">
                         <label class="form-label">Name:</label>
-                        <input type="text" name="name" class="form-control" required>
+                        <input type="text" name="name" class="form-control" placeholder="Enter pet's name" required>
 
                         <label class="form-label mt-2">Pet Size:</label>
                         <div class="d-flex">
@@ -105,10 +120,10 @@ $conn->close();
                         </div>
 
                         <label class="form-label mt-2">Breed:</label>
-                        <input type="text" name="breed" class="form-control" required>
+                        <input type="text" name="breed" class="form-control" placeholder="Enter pet's breed" required>
 
                         <label class="form-label mt-2">Age:</label>
-                        <input type="number" name="age" class="form-control" required>
+                        <input type="number" name="age" class="form-control" placeholder="Enter pet's age in years" required>
 
                         <label class="form-label mt-2">Gender:</label>
                         <div class="d-flex">
@@ -121,7 +136,7 @@ $conn->close();
                         </div>
 
                         <label class="form-label mt-2">Description:</label>
-                        <textarea name="description" class="form-control"></textarea>
+                        <textarea name="description" class="form-control" placeholder="Provide any special details about your pet"></textarea>
 
                         <label class="form-label mt-2">Profile Photo:</label>
                         <input type="file" name="profile_photo" class="form-control" accept="image/*">
@@ -146,7 +161,7 @@ $conn->close();
                         <input type="date" name="expiry_date" class="form-control">
 
                         <label class="form-label mt-2">Special Instructions:</label>
-                        <textarea name="instructions" class="form-control"></textarea>
+                        <textarea name="instructions" class="form-control" placeholder="Enter any special care instructions"></textarea>
 
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-dark">Save and Go Back</button>
