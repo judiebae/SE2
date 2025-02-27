@@ -1,9 +1,10 @@
 <?php
-session_start(); // Start the session to access user info
+session_start(); // Start session
 
 // Redirect if not logged in
 if (!isset($_SESSION['customer_id'])) {
-    die("<script>alert('Please log in first!'); window.location.href='lag.php';</script>");
+    echo "<script>alert('Please log in first!'); window.location.href='lag.php';</script>";
+    exit();
 }
 
 // Database connection
@@ -17,13 +18,14 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Check if form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get logged-in user ID
-    $customer_id = $_SESSION['customer_id']; 
+    $customer_id = $_SESSION['customer_id']; // Get logged-in user ID
 
     // Validate required fields
-    if (!isset($_POST['name'], $_POST['size'], $_POST['breed'], $_POST['age'], $_POST['gender'], $_POST['vaccination_status'])) {
-        die("<script>alert('Please fill all required fields!');</script>");
+    if (empty($_POST['name']) || empty($_POST['size']) || empty($_POST['breed']) || empty($_POST['age']) || empty($_POST['gender']) || empty($_POST['vaccination_status'])) {
+        echo "<script>alert('Please fill all required fields!'); history.back();</script>";
+        exit();
     }
 
     $name = htmlspecialchars($_POST['name'], ENT_QUOTES, 'UTF-8');
@@ -37,38 +39,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $expiry_date = !empty($_POST['expiry_date']) ? $_POST['expiry_date'] : null;
     $instructions = isset($_POST['instructions']) ? htmlspecialchars($_POST['instructions'], ENT_QUOTES, 'UTF-8') : null;
 
-    // Create upload directory if not exists
+    // Create upload directory if it doesn't exist
     $target_dir = "uploads/";
     if (!is_dir($target_dir)) {
         mkdir($target_dir, 0777, true);
     }
 
-    // Profile Photo Upload
+    // Handle Profile Photo Upload
     $profile_photo = null;
     if (!empty($_FILES['profile_photo']['name'])) {
         $profile_photo = $target_dir . time() . "_" . basename($_FILES['profile_photo']['name']);
         move_uploaded_file($_FILES['profile_photo']['tmp_name'], $profile_photo);
     }
 
-    // Vaccination File Upload
+    // Handle Vaccination File Upload
     $vaccination_file = null;
     if (!empty($_FILES['vaccination_file']['name'])) {
         $vaccination_file = $target_dir . time() . "_" . basename($_FILES['vaccination_file']['name']);
         move_uploaded_file($_FILES['vaccination_file']['tmp_name'], $vaccination_file);
     }
 
-    // Insert into Database
+    // Insert pet details into database
     $stmt = $conn->prepare("INSERT INTO pet (customer_id, pet_name, pet_size, pet_breed, pet_age, pet_gender, pet_description, pet_profile_photo, pet_vaccination_status, pet_vaccination_card, pet_vaccination_date, pet_vaccination_expiry, pet_special_instruction)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("isssissssssss", $customer_id, $name, $size, $breed, $age, $gender, $description, $profile_photo, $vaccination_status, $vaccination_file, $date_administered, $expiry_date, $instructions);
 
     if ($stmt->execute()) {
+        // Store the latest pet ID in the session for payment
+        $_SESSION['latest_pet_id'] = $conn->insert_id;
+
         echo "<script>
                 alert('Pet details saved successfully!');
                 window.location.href='pet.php';
               </script>";
+        exit();
     } else {
-        echo "Error: " . $stmt->error;
+        echo "<script>alert('Error: " . $stmt->error . "');</script>";
     }
 
     $stmt->close();
@@ -76,7 +82,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $conn->close();
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -89,6 +94,10 @@ $conn->close();
 <body>
     <div class="container mt-5">
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#petModal">Add Pet</button>
+        
+        <?php if (isset($_SESSION['latest_pet_id'])): ?>
+            <a href="seal.php" class="btn btn-success">Proceed to Payment</a>
+        <?php endif; ?>
     </div>
 
     <div class="modal fade" id="petModal" tabindex="-1" aria-labelledby="petModalLabel" aria-hidden="true">
