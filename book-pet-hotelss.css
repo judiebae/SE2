@@ -42,7 +42,6 @@ border-radius: 5px;
   background-repeat: no-repeat;
   background-attachment: fixed;
   width: 100%;
-  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,6 +57,8 @@ border-radius: 5px;
     height: auto;
   }
 }
+
+
 
 /* Main container styling */
 .main-container {
@@ -234,11 +235,11 @@ font-weight: 500;
 
 
 .main-schedule-options, .book-1 {
-
+border: 1px solid black;
 display: flex;
 margin-left: 3px;
-width: 66%;
-height: 46vh;
+width: 1140px;
+height: 470px;
 flex-wrap: wrap;
 position: relative;
 
@@ -361,12 +362,14 @@ width: auto;
 height: auto;
 flex-wrap: wrap;
 display: flex;
+flex-shrink: 0;
 justify-content: space-between;
 align-items: center;
 align-content: center;
 text-align: center;
 margin-top: auto; /* Push it to the bottom */
-margin-left: 10px;  
+margin-left: 10px; 
+
 }
 
 #check{
