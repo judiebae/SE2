@@ -26,10 +26,12 @@
             </div>
         </div>
         <!-- HEADER -->
-        <div class="header-img-container">
-        <img class="notifications" src="notification-bell.png" />
-        </div>
 
+        <div class="header-img-container">
+        <button id="notificationButton">
+            <img class="notifications" src="notification-bell.png" alt="Notifications" />
+        </button>
+        </div>
     </nav>
 
     <!-- HOME PAGE -->
@@ -98,6 +100,102 @@
         </div>
     </div>
 
-    <script src="admin.js"></script>
+        <!-- Notification Modal -->
+        <div id="notificationModal" class="modal-home">
+        <div class="modal-content-home">
+            <div class="modal-header">
+                <img src="adorafur-logo.png" alt="Adorafur Logo" class="modal-logo">
+                <div class="notifications-header">
+                    Notifications
+                </div>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="notif-today">TODAY</div>
+                <div class="notification-card">
+                    <div class="notif-service">Pet Hotel</div>
+                    <div class="notif-sec">
+                    <div class="notif-sub">Transaction No:</div>
+                    <div class="notif-info">7S89F7A</div>
+                </div>
+
+                <div class="notif-sec">
+                    <div class="notif-sub">Customer: </div>
+                    <div class="notif-info">Han Bascao</div>
+                </div>
+                    <div class="notification-footer">
+                        <div class="date-sec">
+                        <div class="notif-sub">Date: </div>
+                        <div class="notif-info">Today</div>
+                        </div>
+                        <div class="notif-confirmed">CONFIRMED</div>
+                    </div>
+                </div>
+
+
+                <div class="notification-card">
+                <div class="notif-circle"></div>
+                <div class="notif-service">Daycare</div>
+
+                <div class="notif-sec">
+                    <div class="notif-sub">Transaction No:</div>
+                    <div class="notif-info">ASF9S8F9</div>
+                </div>
+
+                <div class="notif-sec">
+                    <div class="notif-sub">Customer: </div>
+                    <div class="notif-info">Jude Flores</div>
+                </div>
+                    <div class="notification-footer">
+                        <div class="date-sec">
+                        <div class="notif-sub">Date: </div>
+                        <div class="notif-info">October 5, 2025</div>
+                        </div>
+                        <button id="confirm-btn" class="confirm-btn">Confirm</button>
+                    </div>
+                </div>
+                <div class="notif-date">Oct 2</div>
+                <div class="notification-card">
+                    <div class="notif-text">Fully Booked on October 6, 2024</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const modal = document.getElementById("notificationModal");
+    const btn = document.getElementById("notificationButton");
+    const modalOverlay = document.createElement("div"); // Create overlay dynamically
+    modalOverlay.classList.add("modal-overlay");
+    document.body.appendChild(modalOverlay); // Append overlay to body
+
+    const closeButtons = document.querySelectorAll(".close");
+
+    // Open modal and overlay on button click
+    if (btn && modal) {
+        btn.addEventListener("click", () => {
+            modal.style.display = "block";
+            modalOverlay.style.display = "block"; // Show overlay
+        });
+    }
+
+    // Close modal and overlay on (x) button click
+    closeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            if (modal) {
+                modal.style.display = "none";
+                modalOverlay.style.display = "none"; // Hide overlay
+            }
+        });
+    });
+
+    // Close modal and overlay when clicking outside the content
+    modalOverlay.addEventListener("click", () => {
+        modal.style.display = "none";
+        modalOverlay.style.display = "none";
+    });
+</script>
+
+        <script src="admin.js"></script>
 </body>
 </html>
