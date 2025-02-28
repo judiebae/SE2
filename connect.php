@@ -1,5 +1,4 @@
 <?php
-session_start();
 $host = "localhost";
 $dbname = "fur-a-paw-intments";
 $username = "root";

@@ -1,15 +1,50 @@
+<?php
+
+if (session_status() == PHP_SESSION_NONE) { 
+    session_start(); 
+} 
+include("connect.php");
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// After including connect.php
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="Profilerr.css">
+    <link rel="stylesheet" href="Profilers.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 </head>
 <body>
-<?php include 'header.php'; ?>
+<?php 
+    include 'header.php';
+    if (isset($_SESSION['user_id']) && $_SESSION['user_id'] > 0) {
+        $user_id = $_SESSION['user_id'];
+        $customer_info = mysqli_query($conn, "SELECT * FROM users WHERE id='$user_id'");
+        if ($customer_info) {
+            $fetch_cust_info = mysqli_fetch_assoc($customer_info);
+            if (!$fetch_cust_info) {
+                echo "No user found with ID: " . $user_id;
+            }
+        } else {
+            echo "Query failed: " . mysqli_error($conn);
+        }
+    } else {
+        echo "User is not logged in.";
+    }
+?>
 
     <div class="profile">
         <section>
@@ -44,33 +79,33 @@
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <label class="form-label">FIRST NAME</label>
-                                            <input type="text" class="form-control" name="first_name" value="<?php echo $first_name; ?>" required>
+                                            <input type="text" class="form-control" name="first_name" value="<?php echo $fetch_cust_info['first_name'] ?>" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">LAST NAME</label>
-                                            <input type="text" class="form-control" name="last_name" value="<?php echo $last_name; ?>" required>
+                                            <input type="text" class="form-control" name="last_name" value="<?php echo $fetch_cust_info['last_name']?>" required>
                                         </div>
                                     </div>
 
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <label class="form-label">CONTACT NO.</label>
-                                            <input type="tel" class="form-control" name="contact" value="<?php echo $contact; ?>" required>
+                                            <input type="tel" class="form-control" name="contact" value="<?php echo $fetch_cust_info['contact_number']?>" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">EMAIL</label>
-                                            <input type="email" class="form-control" name="email" value="<?php echo $email; ?>" required>
+                                            <input type="email" class="form-control" name="email" value="<?php echo $fetch_cust_info['email']?>" required>
                                         </div>
                                     </div>
 
                                     <div class="mb-3">
                                         <label class="form-label">ADDRESS</label>
-                                        <input type="text" class="form-control" name="address" value="<?php echo $address; ?>" required>
+                                        <input type="text" class="form-control" name="address" value="<?php echo isset($fetch_cust_info['address']) ? htmlspecialchars($fetch_cust_info['address']) : 'N/A'; ?>" required>
                                     </div>
 
                                     <div class="mb-3">
                                         <label class="form-label">SOCIALS</label>
-                                        <input type="url" class="form-control" name="socials" value="<?php echo $socials; ?>">
+                                        <input type="url" class="form-control" name="socials" value="<?php echo isset($fetch_cust_info['socials']) ? htmlspecialchars($fetch_cust_info['address']) : 'N/A'; ?>">
                                     </div>
 
                                     <div class="row mb-4">
@@ -112,21 +147,21 @@
                     <div class="deets">
                         <div class="name">
                             <div class="deet1">
-                                <p class="deet">FIRST NAME</p>                     
+                                <p class="deet">FIRST NAME <strong><?php echo $fetch_cust_info['first_name']?> </strong> </p>                     
                                 <hr class="hline">
-                                <p class="deet">CONTACT NUMBER</p>
+                                <p class="deet">CONTACT NUMBER <strong><?php echo $fetch_cust_info['contact_number']?> </strong> </p>                     
                                 <hr class="hline">
                             </div>
                             <div class="deet2">
-                                <p class="deet">LAST NAME </p>                        
+                                <p class="deet">LAST NAME <strong><?php echo $fetch_cust_info['last_name']?> </strong> </p>                                            
                                 <hr class="hline">
-                                <p class="deet">CONTACT NUMBER</p>
+                                <p class="deet">EMAIL <strong><?php echo $fetch_cust_info['email']?></strong> </p>  
                                 <hr class="hline">
                             </div>
                         </div>
                         
                         <div class="deet3">
-                            <p class="deet">ADDRESS </p>                       
+                            <p class="deet">ADDRESS <strong><?php echo isset($fetch_cust_info['address']) ? htmlspecialchars($fetch_cust_info['address']) : 'N/A'; ?> </strong> </p>                         
                             <hr class="hline">
                             <p class="deet">SOCIAL LINK</p>
                             <hr class="hline">

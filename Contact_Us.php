@@ -3,16 +3,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="Contact_Us.css">
+    <link rel="stylesheet" href="Contact.css">
     <!--<script src="script.js" defer></script>-->
     <title>Adorafur Happy Stay</title>
 </head> 
 
 <body>
 
-<div id="header">
-        <?php include 'header.php'; ?>
-    </div>
+<?php include 'header.php'; ?>
+
 
 <div class = "main">
     <div class="contact">

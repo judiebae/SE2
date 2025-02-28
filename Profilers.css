@@ -388,7 +388,6 @@ input[type="radio"] {
 #cancel-but{
     border: 1px solid #421D11;
     color: #421D11;
-    padding: 0.5rem 2rem;
     border-radius: 5px;
 }
 
@@ -396,7 +395,6 @@ input[type="radio"] {
     color: #ffffff;
     background-color: #563727;
     border: none;
-    padding: 0.5rem 2rem;
     border-radius: 5px;
 }
 
