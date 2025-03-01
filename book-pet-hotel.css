@@ -34,9 +34,7 @@ border-radius: 5px;
 
 /* Main class styling */
 .main {
-
-
-  margin-top: 156px;
+  margin-top: 132px;
   min-height: calc(100vh - 156px);
   background-image: url("Booking/hotel_orig.png");
   background-size: cover;
@@ -229,12 +227,7 @@ font-family: "BalooTammudu2-Medium", sans-serif;
 font-size: 40px;
 font-weight: 500;
 }
-.available-slot {
-color: #421d11;
-font-family: "BalooTammudu2-Medium", sans-serif;
-font-size: 40px;
-font-weight: 500;
-}
+
 
 .main-schedule-options {
 
@@ -439,3 +432,24 @@ justify-content: center;
 text-transform: uppercase;
 }
 
+.book-label{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-left: 10px;
+  height: auto;
+}
+.book-1{
+  position: relaitve
+}
+
+.client{
+  color: #421d11;
+  font-family: "BalooTammudu2-Medium", sans-serif;
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 40px;
+}
+.client-email {
+  font-size: 30px; /* Adjust to desired size */
+}

@@ -1,12 +1,3 @@
-<?php
- 
-  // include("connect.php");
-
- 
-
-?>
-
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -26,6 +17,7 @@
     <img src="Header-Pics/PIC5.png" alt="pic5" class="paws2">
   </div>
 
+  <?php include 'login.php'?>
   <nav class="navbar navbar-expand-lg navbar-dark ">
   <div class="container">
     <button class="navbar-toggler shadow-none border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
@@ -79,126 +71,13 @@
           </li>
 
           <li class="nav-item">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal" data-backdrop="false">LOGIN</button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal" data-backdrop="false">LOGIN</button>
           </li>
         </ul>
       </div>
     </div>
   </div>
 </nav>
-
-
-    <!-- Login Modal -->
-    <div class="modal" id="loginModal"  tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header" >
-                     <!-- <h5 class="modal-title">Welcome back to your pet’s favorite spot!</h5>  -->
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="login-body">
-                  <h5 class="modal-title">Paw’s up, fur-furfriend</h5>
-                  <h2 class="modal-title"> Welcome back to your pet's favorite spot!</h2>
-
-                    <form id="loginForm" action="" method="POST">
-                        <input type="hidden" name="action" value="login">
-                        <div class="mb-3 d-flex justify-content-center">
-                            <input type="email" class="form-control w-50" name="email" required placeholder="Enter Email">
-                        </div>
-                        <div class="mb-3  d-flex justify-content-center">
-                            <input type="password" class="form-control w-50" name="password" required placeholder="Enter Password">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Login</button>
-                        <p class="mt-3 text-center" ><a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" id="not-yet-register">Not yet registered?</a></p>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Register Modal -->
-    <div class="modal fade" id="registerModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-dialog modal-xl">
-                <div class="modal-content border-0 p-0">
-                    <div class="row g-0">
-                        <!-- Form Side -->
-                        <div class="col-md-6 form-side">
-                            
-                            <div class="p-4 p-md-4">
-                                <h2 class="fw-bold mb-2">Register</h2>
-                                <p class="text-muted mb-2">Fill in this form to create an account</p>
-                                <hr>
-                                
-                                <form id="registerForm" method="POST">
-                                    <div class="row g-2">
-                                        <div class="col-6">
-                                            <div class="mb-1">
-                                              <label for="firstName">First Name <span class="text-danger">*</span></label>
-                                              <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Enter First Name" required>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-6">
-                                            <div class="mb-3">
-                                              <label for="lastName">Last Name <span class="text-danger">*</span></label>
-                                              <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Enter Last Name" required>      
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-12">
-                                            <div class="mb-3">
-                                                <label for="email">Email <span class="text-danger">*</span></label>
-                                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter Email" required>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-12">
-                                            <div class="mb-3">
-                                              <label for="contactNumber">Contact Number <span class="text-danger">*</span></label>  
-                                              <input type="tel" class="form-control" id="contactNumber" name="contactNumber" placeholder="Contact Number" required>  
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-12">
-                                            <div class="mb-3 password-input">
-                                              <label for="password">Password <span class="text-danger">*</span></label>
-                                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>  
-                                                <span class="validation-icon"></span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-12">
-                                            <div class="mb-3 password-input">
-                                                <label for="repeatPassword">Repeat Password <span class="text-danger">*</span></label>
-                                                <input type="password" class="form-control" id="repeatPassword" name="repeatPassword" placeholder="Repeat Password" required>
-                                                <span class="validation-icon"></span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-12">
-                                            <button type="submit" class="btn btn-primary create-button w-100" id="create-but">Create</button>
-                                        </div>
-                                    </div>
-                                    
-                                    <p class="text-center mt-4 mb-0">
-                                        Already have an account? 
-                                        <a href="#" class="sign-in-link" id="sign-in">Sign in</a>
-                                    </p>  
-                                </form>
-                            </div>
-                        </div>
-                        
-                        <!-- Image Side -->
-                        <div class="col-md-6 d-none d-md-block image-side p-0">
-                            <img src="Register-dog.png" alt="Happy dog" class="dog-image">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 
 </body>
 </html>
