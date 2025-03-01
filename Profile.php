@@ -413,7 +413,7 @@ if (!$conn) {
 
                 <div class="rPet">
                     <button type="button" class="btn" id="regPet" data-bs-toggle="modal" data-bs-target="#regPetModal">
-                        <h6 class="regnewpet">Need to register new pet?</h6>
+                        <h6 class="regPet">Need to register new pet?</h6>
                     </button>
                 </div>
 

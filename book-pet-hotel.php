@@ -12,7 +12,9 @@
     <!-- Your custom CSS -->
     <link rel="stylesheet" href="book-pet-hotel.css">
     <link rel="stylesheet" href="Profiler.css">
+    <link rel="stylesheet" href="seal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+   
     <!-- jQuery and Bootstrap Bundle (includes Popper) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -204,7 +206,7 @@
                             <div class = "lower-section">               
                                 <div class="newpet">
                                     <button type="button" class="btn" id="regPet" data-bs-toggle="modal" data-bs-target="#regPetModal">
-                                        <h6 class="regnewpet">Need to register new pet?</h6>
+                                        <h6 class="regnewpet" style = "font-weight: 600;">Need to register new pet?</h6>
                                     </button>
                                 </div>
                                 <div class="modal fade" id="regPetModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -330,9 +332,71 @@
                                     </div>
                                 </div>
 
-                                <div class = proctopayment>
-                                    <div class="payment">Proceed to payment</div>
-                                    
+                                <!-- Payment Modal -->
+                                <div class="proctopayment">
+                                    <button type="button" class="btn payment-btn" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                                        Proceed to Payment
+                                    </button>
+                                </div>
+
+                                <!-- Payment Modal -->
+                                <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content payment-modal">
+                                            <div class="modal-body">
+                                                <h1>Let's Seal the Deal!</h1>
+                                                <p class="subtitle">To finalize your pet's stay, please scan the QR code below to securely process your payment.</p>
+
+                                                <div class="modal-grid">
+                                                    <div class="details-section">
+                                                        <p class="transaction-no">Transaction No. 4565789</p>
+                                                        <h2 class="pet-name">Good Boi</h2>
+                                                        <p class="dates">October 5, 12:00 NN - 6:00 PM</p>
+
+                                                        <div class="info-grid">
+                                                            <div class="info-row"><span class="label">Service:</span><span class="value">Pet Daycare</span></div>
+                                                            <div class="info-row"><span class="label">Breed:</span><span class="value">Shih Tzu</span></div>
+                                                            <div class="info-row"><span class="label">Gender:</span><span class="value">Male</span></div>
+                                                            <div class="info-row"><span class="label">Age:</span><span class="value">7 years old</span></div>
+                                                            <div class="info-row"><span class="label">Owner:</span><span class="value">Jude Emmanuel Flores</span></div>
+                                                            <div class="info-row"><span class="label">Amount to pay:</span><span class="value">₱ 250.00</span></div>
+                                                            <div class="info-row"><span class="label">Remaining Balance:</span><span class="value">₱ 250.00</span></div>
+                                                        </div>
+
+                                                        <form method="POST" enctype="multipart/form-data">
+                                                            <div class="payment-section">
+                                                                <p class="section-label">Mode of Payment</p>
+                                                                <div class="radio-group">
+                                                                    <label><input type="radio" name="payment_method" value="Maya" checked> <span>Maya</span></label>
+                                                                    <label><input type="radio" name="payment_method" value="GCash"> <span>GCash</span></label>
+                                                                </div>
+
+                                                                <p class="section-label">Reference No. of Your Payment</p>
+                                                                <input type="text" name="reference_no" placeholder="Enter Reference Number" class="reference-input" required>
+
+                                                                <p class="section-label">Proof of Payment</p>
+                                                                <input type="file" name="payment_proof" accept="image/*" required>
+                                                            </div>
+
+                                                            <button type="submit" class="action-btn">Complete Booking</button>
+                                                        </form>
+                                                    </div>
+
+                                                    <div class="qr-section">
+                                                        <div class="qr-codes">
+                                                            <img src="temp_gcash.png" alt="GCash QR Code" class="qr-code">
+                                                            <img src="temp_maya.png" alt="Maya QR Code" class="qr-code">
+                                                        </div>
+                                                        <p class="qr-instruction">We accept bank transfer to our GCash/Maya account or just scan the QR Code!</p>
+                                                        <div class="account-info">
+                                                            <p>Account Number: <span>987654321</span></p>
+                                                            <p>Account Name: <span>Veatrice Delos Santos</span></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

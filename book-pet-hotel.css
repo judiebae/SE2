@@ -542,13 +542,13 @@ text-transform: uppercase;
   margin: 0;
   text-align: center;
   color: #764839;;
- 
+  
   align-items: center;
 }
 
 .btn{
   width: auto !important;
-
+  
 }
 
 .lower-section{
@@ -557,20 +557,21 @@ text-transform: uppercase;
 }
 
 .proctopayment {
-  border: 1px solid black;
+  
   display: flex;
   flex-direction: row;
 }
 
-.payment {
-  background: #4c3627; /* Dark brown background */
-  color: #ffffff; /* White text */
-  font-family: "BalooTammudu2-Medium", sans-serif;
-  font-size: 16px; /* Reduced font size */
-  border: 1.5px solid #ffffff; /* Slightly thinner border */
-  border-radius: 8px; /* Reduced rounded corners */
-  padding: 5px 15px; /* Less padding for a more compact look */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.btn.payment-btn {
+  background: #4c3627 !important;
+  color: #ffffff !important;
+  font-family: "BalooTammudu2-Medium", sans-serif !important;
+  font-size: 16px !important;
+  border: 1.5px solid #ffffff !important;
+  border-radius: 8px !important;
+  padding: 5px 15px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
+
