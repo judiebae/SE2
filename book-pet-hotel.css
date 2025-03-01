@@ -1,10 +1,4 @@
-#header {
-  z-index: 100;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-}
+
 
 
 /* General styles */
@@ -34,7 +28,7 @@ border-radius: 5px;
 
 /* Main class styling */
 .main {
-  margin-top: 132px;
+
   min-height: calc(100vh - 156px);
   background-image: url("Booking/hotel_orig.png");
   background-size: cover;
@@ -541,4 +535,42 @@ text-transform: uppercase;
 
 .client-email {
   font-size: 30px; /* Adjust to desired size */
+}
+
+.regnewpet{
+  text-decoration: underline;
+  margin: 0;
+  text-align: center;
+  color: #764839;;
+ 
+  align-items: center;
+}
+
+.btn{
+  width: auto !important;
+
+}
+
+.lower-section{
+  display: flex;
+  justify-content: space-between;
+}
+
+.proctopayment {
+  border: 1px solid black;
+  display: flex;
+  flex-direction: row;
+}
+
+.payment {
+  background: #4c3627; /* Dark brown background */
+  color: #ffffff; /* White text */
+  font-family: "BalooTammudu2-Medium", sans-serif;
+  font-size: 16px; /* Reduced font size */
+  border: 1.5px solid #ffffff; /* Slightly thinner border */
+  border-radius: 8px; /* Reduced rounded corners */
+  padding: 5px 15px; /* Less padding for a more compact look */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

@@ -1,6 +1,6 @@
 <?php
 $host = "localhost";
-$dbname = "pet_service_db";
+$dbname = "fur_a_paw_intments";
 $username = "root";
 $password = "";
 

@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
 
     <!-- Your custom CSS -->
-    <link rel="stylesheet" href="book-pet-hotelss.css">
-
+    <link rel="stylesheet" href="book-pet-hotel.css">
+    <link rel="stylesheet" href="Profiler.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <!-- jQuery and Bootstrap Bundle (includes Popper) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -23,11 +24,10 @@
 </head>
 
 <body>
-    <div id="header">
-        <?php include 'header.php'; ?>
-    </div>
 
-    _ <div class="main">
+    <?php include 'header.php'; ?>
+
+     <div class="main">
         <div class="main-container">
             <div class="pet-hotel-title" id="flex">PET HOTEL</div>
             <hr class="hr" id="flex">
@@ -200,6 +200,141 @@
                                     ?>
                                 </tbody>
                             </table>
+
+                            <div class = "lower-section">               
+                                <div class="newpet">
+                                    <button type="button" class="btn" id="regPet" data-bs-toggle="modal" data-bs-target="#regPetModal">
+                                        <h6 class="regnewpet">Need to register new pet?</h6>
+                                    </button>
+                                </div>
+                                <div class="modal fade" id="regPetModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                                        <div class="modal-content">
+                                            <div class="modal-header d-flex justify-content-center align-items-center" id="mheader">
+                                                <h1 class="modal-title" id="saveModal">PET/s</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body" id="mbody">
+                                                <div class="pet-modal">
+                                                    <form class="pet-form" method="post" enctype="multipart/form-data">
+                                                        <div class="container-fluid p-0">
+                                                            <div class="row">
+                                                                <!-- Left Column -->
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label for="pet_name" class="form-label">NAME</label>
+                                                                        <input type="text" id="pet_name" name="pet_name" class="form-control" required>
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">PET SIZE</label>
+                                                                        <div class="radio-group">
+                                                                            <div>
+                                                                                <input type="radio" name="pet_size" id="small_dog" value="small_dog">
+                                                                                <label for="small_dog">Small Dog</label>
+                                                                            </div>
+                                                                            <div>
+                                                                                <input type="radio" name="pet_size" id="large_dog" value="large_dog">
+                                                                                <label for="large_dog">Large Dog</label>
+                                                                            </div>
+                                                                            <div>
+                                                                                <input type="radio" name="pet_size" id="regular_dog" value="regular_dog">
+                                                                                <label for="regular_dog">Regular Dog</label>
+                                                                            </div>
+                                                                            <div>
+                                                                                <input type="radio" name="pet_size" id="regular_cat" value="regular_cat">
+                                                                                <label for="regular_cat">Regular Cat</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="breed" class="form-label">BREED</label>
+                                                                        <input type="text" id="breed" name="breed" class="form-control" placeholder="Type Breed Here">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="age" class="form-label">AGE</label>
+                                                                        <input type="text" id="age" name="age" class="form-control" placeholder="Type Age Here">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">GENDER</label>
+                                                                        <div class="radio-group">
+                                                                            <div>
+                                                                                <input type="radio" name="gender" id="male" value="male">
+                                                                                <label for="male">Male</label>
+                                                                            </div>
+                                                                            <div>
+                                                                                <input type="radio" name="gender" id="female" value="female">
+                                                                                <label for="female">Female</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="petDescription" class="form-label">DESCRIPTION</label>
+                                                                        <textarea id="petDescription" name="description" class="form-control" placeholder="e.x. White Spots" rows="3"></textarea>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Right Column -->
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label for="pet_photo" class="form-label">PET PROFILE PHOTO</label>
+                                                                        <input type="file" id="pet_photo" name="pet_photo" class="form-control" accept="image/*,application/pdf">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">VACCINATION STATUS</label>
+                                                                        <input type="file" name="vaccination_file" class="form-control mb-2" accept="image/*,application/pdf">
+                                                                        <div class="radio-group">
+                                                                            <div>
+                                                                                <input type="radio" name="vaccination_status" id="vaccinated" value="vaccinated">
+                                                                                <label for="vaccinated">Vaccinated</label>
+                                                                            </div>
+                                                                            <div>
+                                                                                <input type="radio" name="vaccination_status" id="not_vaccinated" value="not_vaccinated">
+                                                                                <label for="not_vaccinated">Not Vaccinated</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="date_administered" class="form-label">DATE ADMINISTERED</label>
+                                                                        <input type="date" id="date_administered" name="date_administered" class="form-control">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="expiry_date" class="form-label">EXPIRY DATE</label>
+                                                                        <input type="date" id="expiry_date" name="expiry_date" class="form-control">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="petInstruction" class="form-label">SPECIAL INSTRUCTIONS</label>
+                                                                        <textarea id="petInstruction" name="special_instructions" class="form-control" placeholder="e.x. Medications" rows="3"></textarea>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row mt-3">
+                                                                <div class="col-12 text-center">
+                                                                    <button type="submit" class="btn" id="confirm-but">Save and Go Back</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class = proctopayment>
+                                    <div class="payment">Proceed to payment</div>
+                                    
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
