@@ -39,7 +39,7 @@ $transactions = getTransactions();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Customer Profile</title>
-    <link rel="stylesheet" href="admin_navbar1.css">
+    <link rel="stylesheet" href="admin_navbar.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #e8e8e8; }
@@ -78,6 +78,7 @@ $transactions = getTransactions();
     <!-- Main Content -->
     <div class="panel-container">
         <div class="admin-panel-text">Customers</div>
+        <!-- Real-time clock -->
         <div class="time-text" id="real-time-clock">Loading...</div>
         <div class="line-1"></div>
 

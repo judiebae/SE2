@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin_navbar1.css">
+    <link rel="stylesheet" href="admin_navbar.css">
     <title>Admin Homepage</title>
 </head> 
 
@@ -25,8 +25,8 @@
                 <a href="admin_profile.php" class="profile-text">Profile</a>
             </div>
         </div>
-        <!-- HEADER -->
 
+        <!-- HEADER -->
         <div class="header-img-container">
         <button id="notificationButton">
             <img class="notifications" src="notification-bell.png" alt="Notifications" />
@@ -46,6 +46,7 @@
         <!-- Real-time clock -->
         <div class="time-text" id="real-time-clock">Loading...</div>
         <div class="date-and-day">Loading date...</div>
+        <!-- Real time date-->
         <div class="date-text">Date</div>
         <div class="line-1"></div>
 
@@ -194,8 +195,8 @@
         modal.style.display = "none";
         modalOverlay.style.display = "none";
     });
-</script>
+    </script>
 
-        <script src="admin.js"></script>
-</body>
+    <script src="admin.js"></script>
+    </body>
 </html>
