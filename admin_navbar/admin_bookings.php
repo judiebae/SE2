@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin_navbar1.css">
+    <link rel="stylesheet" href="admin_navbar.css">
     <title>Admin Bookings</title>
 </head> 
 
@@ -18,7 +18,7 @@
           </div>
 
           <div class="book-button active">
-            <a href="admin_bookings.php" class="booking-text">Bookings</a>
+            <a href="admin_bookings1.php" class="booking-text">Bookings</a>
           </div>
 
             <div class="by-service-frame">
@@ -51,11 +51,107 @@
 
     </nav>
 
-    <!-- BOOKINGS -->
+    <!-- BOOKINGS PANEL-->
     <div class="panel-container">
       <div class="admin-panel-text">Bookings</div>
       <div class="time-text" id="real-time-clock">Loading...</div>
       <div class="line-1"></div>
+
+
+    <!-- CALENDAR -->
+      <div class="bookings-weekly">
+          <div class="controls">
+            <button onclick="changeWeek(-1)">⬅️ Previous Week</button>
+            <span id="week-range"></span>
+            <button onclick="changeWeek(1)">Next Week ➡️</button>
+        </div>
+
+        <div class="calendar" id="calendar"></div>
+      </div>
+
+
+    <!-- SIDE BAR-->
+      <div class="side-bar">
+      <div class="reminders-section">
+    <div class="sidebar-title">REMINDERS</div>
+
+    <div class="sidebar-textbox reminder-item">
+        <div class="sidebar-subtitle">Vet Visit</div>
+        <div class="sidebar-desc">October 5, 2024</div>
+        <div class="sidebar-line"></div>
+    </div>
+
+    <div class="sidebar-textbox reminder-item">
+        <div class="sidebar-subtitle">Water Interruption</div>
+        <div class="sidebar-desc">October 9, 2024</div>
+        <div class="sidebar-line"></div>
+    </div>
+
+    <div class="sidebar-textbox reminder-item">
+        <div class="sidebar-subtitle">Electric Bills Deadline</div>
+        <div class="sidebar-desc">October 15, 2024</div>
+        <div class="sidebar-line"></div>
+    </div>
+
+    <div class="sidebar-textbox reminder-item">
+        <div class="sidebar-subtitle">Dog Food Restock</div>
+        <div class="sidebar-desc">October 15, 2024</div>
+        <div class="sidebar-line"></div>
+    </div>
+
+    <div class="sidebar-textbox reminder-item">
+        <div class="sidebar-subtitle">Halfday Operations</div>
+        <div class="sidebar-desc">October 15, 2024</div>
+        <div class="sidebar-line"></div>
+    </div>
+
+    <div class="sidebar-textbox">
+        <div class="add-sidebar">Add Reminder</div>
+        <div class="sidebar-line"></div>
+    </div>
+
+    <div class="view-rem" id="viewRemindersBtn">View Reminders</div>
+</div>
+
+
+        <div class="tasks-section">
+        <div class="sidebar-title">TASKS</div>
+
+        <div class="sidebar-textbox">
+          <div class="sidebar-subtitle">Follow Up Payment</div>
+          <div class="sidebar-bdesc">Transaction ID: SHSD78F6</div>
+          <div class="sidebar-desc">Han Bascao, GCash</div>
+          <div class="sidebar-line"></div>
+        </div>
+
+        <div class="sidebar-textbox">
+          <div class="sidebar-subtitle">Send Confirmation Msg</div>
+          <div class="sidebar-bdesc">Phone Number: 0993 452 1387</div>
+          <div class="sidebar-desc">Joanne Margareth</div>
+          <div class="sidebar-line"></div>
+        </div>
+
+        <div class="sidebar-textbox">
+          <div class="sidebar-subtitle">Follow Up Payment</div>
+          <div class="sidebar-bdesc">Transaction ID: H3JK4H5J</div>
+          <div class="sidebar-desc">Jude Flores, Paymaya</div>
+          <div class="sidebar-line"></div>
+        </div>
+
+        <div class="sidebar-textbox">
+          <div class="sidebar-subtitle">Send Confirmation Msg</div>
+          <div class="sidebar-bdesc">Phone Number: 0932 763 1111</div>
+          <div class="sidebar-desc">Vince Delos Santos</div>
+          <div class="sidebar-line"></div>
+        </div>
+
+        <div class="sidebar-textbox">
+          <div class="add-sidebar">Add Task</div>
+          <div class="sidebar-line"></div>
+          </div>
+          <div class="view-task" id="viewTasksBtn">View Tasks</div>
+        </div>
+      </div>
 
     </div>
     <script src="admin.js"></script>
