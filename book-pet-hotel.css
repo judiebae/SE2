@@ -8,9 +8,10 @@ overflow-y: auto; /* Allow vertical scrolling */
 position: relative;
 }
 
-*{
+/*{
   outline: 1px solid red;
 }
+*/
 
 body {
 display: flex;
@@ -843,3 +844,72 @@ text-transform: uppercase;
       grid-template-columns: 1fr;
   }
 }
+
+.checkbox-container {
+  display: flex;
+  flex-direction: column;
+  /* Stack checkbox and text */
+  align-items: start;
+}
+
+#waiverForm-title {
+  font-weight: bold;
+  color: #AB643C;
+  font-size: 200%
+}
+
+#waiverForm-header {
+  border-bottom: none;
+  background-image: url('waiverForm-paw-top.png');
+  /* Ensure the correct path */
+  background-repeat: no-repeat;
+  /* Prevents the image from repeating */
+  background-position: right bottom;
+  background-size: auto 200%;
+}
+
+#waiverForm-body {
+  color: #421D11;
+  padding: 2%;
+}
+
+#waiverForm-body hr {
+  border: solid 1px #421D11;
+}
+
+#waiverForm-checkbox {
+  font-weight: bold;
+  margin-top: 10px;
+  accent-color: #421D11;
+  border: solid 2px #421D11;
+}
+
+#waiverForm-footer {
+  border-top: none;
+  background-image: url('waiverForm-paw-bottom.png');
+  /* Ensure the correct path */
+  background-repeat: no-repeat;
+  /* Prevents the image from repeating */
+  background-position: left top;
+  background-size: auto 100%;
+}
+
+#complete-booking {
+  color: #fff;
+  background-color: #421D11;
+  border-radius: 5px;
+  max-width: 100%;
+  width: 20%
+}
+
+#complete-booking:hover {
+  background-color: #AB643C;
+  border-radius: 5px;
+}
+
+.disabled-section {
+  opacity: 0;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
