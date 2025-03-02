@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 
-    <link rel="stylesheet" href="abouts.css">
+    <link rel="stylesheet" href="aboutss.css">
     <title>Joanne Joaquin</title>
 </head>
 <body>
 
-<div id="header">
+
         <?php include 'header.php'; ?>
-    </div>
+    
 <div class = about>
 <div class="mvg">
         <div class="whiteline">
