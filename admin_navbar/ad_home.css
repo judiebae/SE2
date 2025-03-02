@@ -117,16 +117,23 @@ td{
 }
 .modal-header.modal-hotel  {
     border-left: solid 20px #1a4b8c;
-    color: #1a4b8c;
 }
 
 .modal-header.modal-daycare {
-    border-left: solid 20px #FFA500;
+    border-left: solid 20px #FFd700;
     color: #1a4b8c;
 }
 
-#saveButton, #cancelButton{
+.modal-header.modal-hotel #saveButton, .modal-header.modal-hotel #cancelButton{
     background-color: #1a4b8c;
+    color: white;
+    border-radius: 20px;
+    font-size: 100%;
+    width: 100px;
+}
+
+.modal-header.modal-daycare #saveButton, .modal-header.modal-daycare #cancelButton{
+    background-color: #ffd700;
     color: white;
     border-radius: 20px;
     font-size: 100%;
