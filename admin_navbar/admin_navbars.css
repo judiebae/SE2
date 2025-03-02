@@ -233,20 +233,7 @@ html, body {
   }
 
 
-  
-  /* HOME PAGE*/
-  .panel-container {
-  background: #ffffff;
-  border-radius: 20px;
-  width: 100%;
-  max-width: 990px;
-  height: 913px;
-  position: fixed;
-  left: 220px;
-  top: 100px;
-  overflow: hidden;
-  display: flex;
-}
+ 
 
 .admin-panel-text {
   color: #663a2c;
