@@ -2,10 +2,10 @@
 session_start(); // Start session
 
 // Redirect if not logged in
-//if (!isset($_SESSION['customer_id'])) {
-//    echo "<script>alert('Please log in first!'); window.location.href='lag.php';</script>";
- //   exit();
-//}
+if (!isset($_SESSION['customer_id'])) {
+    echo "<script>alert('Please log in first!'); window.location.href='lag.php';</script>";
+    exit();
+}
 
 // Database connection
 $servername = "localhost";
