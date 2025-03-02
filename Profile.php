@@ -5,10 +5,10 @@ if (session_status() == PHP_SESSION_NONE) {
 } 
 include("connect.php");
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
+//if (!isset($_SESSION['user_id'])) {
+//    header("Location: login.php");
+//    exit();
+//}
 
 // After including connect.php
 if (!$conn) {
@@ -23,7 +23,7 @@ if (!$conn) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="Profilers.css">
+    <link rel="stylesheet" href="Profiler.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 </head>
@@ -33,7 +33,7 @@ if (!$conn) {
     if (isset($_SESSION['user_id']) && $_SESSION['user_id'] > 0) {
         $user_id = $_SESSION['user_id'];
         $customer_info = mysqli_query($conn, "SELECT * FROM users WHERE id='$user_id'");
-        if ($customer_info) {
+        if ($customer_info) {   
             $fetch_cust_info = mysqli_fetch_assoc($customer_info);
             if (!$fetch_cust_info) {
                 echo "No user found with ID: " . $user_id;
