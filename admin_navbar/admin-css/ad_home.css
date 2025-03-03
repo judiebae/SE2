@@ -23,10 +23,6 @@
 }
 
 
-.deets-date{
-    color: #eee;
-}
-
 .deets-id,
 .deets-pet,
 .deets-service,
@@ -45,7 +41,10 @@
 }
 
 .deets-date{
-    border-right:  1px solid #eee;;
+    border-right:  1px solid #eee;
+    border-top: 2px solid #eee;
+    border-bottom: 2px solid #eee;
+    color: #eee;
 }
 
 
