@@ -15,7 +15,7 @@ $sql = "SELECT
             pay.payment_status AS pay_status,
             DATE(b.booking_check_in) AS b_in,
             DATE(b.booking_check_out) AS b_out
-        FROM booking b
+        FROM booking_fact_table b
         JOIN pet p ON b.pet_id = p.pet_id
         JOIN customer c ON p.customer_id = c.customer_id
         JOIN service s ON b.service_id = s.service_id
@@ -38,17 +38,6 @@ try {
 }
 
 
-// Remove this part as we'll fetch booking data dynamically
-// $booking_id = $_GET['booking_id'];
-// $sql1 = "...";
-// $stmt = $conn->prepare($sql1);
-// $stmt->bind_param('s', $booking_id);
-// $stmt->execute();
-// $result = $stmt->get_result();
-// $bookingData = $result->fetch_assoc();
-// $stmt->close();
-
-
 ?>
 
 
@@ -57,7 +46,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin_navbars.css">
+    <link rel="stylesheet" href="admin_header.css">
     <link rel="stylesheet" href="ad_home.css">
 
 
