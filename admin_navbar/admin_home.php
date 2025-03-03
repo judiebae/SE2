@@ -1,8 +1,6 @@
 <?php
 
-
 include("../connect.php");
-
 
 $sql = "SELECT
             b.booking_id AS b_id,
@@ -28,7 +26,6 @@ $sql = "SELECT
             END,
             b.booking_check_in ASC;";
 
-
 try {
     $stmt = $conn->prepare($sql);  // Prepare the query
     $stmt->execute();  // Execute the query
@@ -37,34 +34,28 @@ try {
     echo "Error: " . $e->getMessage();
 }
 
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin_header.css">
-    <link rel="stylesheet" href="ad_home.css">
-
+    <link rel="stylesheet" href="admin-css/admin_header2.css">
+    <link rel="stylesheet" href="admin-css/ad_home.css">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
+    <script src="admin.js"></script>
 
     <title>Admin Homepage</title>
    
 </head>
 
-
 <body>
     <!-- NAVIGATION BAR -->
     <nav class="nav-bar">
-        <img class="adorafur-logo" src="adorafur-logo.png" alt="Adorafur Logo" />
+        <img class="adorafur-logo" src="admin-pics/adorafur-logo.png" alt="Adorafur Logo" />
         <div class="nav-container">
             <div class="home-button active">
                 <a href="admin_home.php" class="home-text">Home</a>
@@ -82,19 +73,15 @@ try {
         <!-- HEADER -->
         <div class="header-img-container">
             <button id="notificationButton">
-                <img class="notifications" src="notification-bell.png" alt="Notifications" />
+                <img class="notifications" src="admin-pics/notification-bell.png" alt="Notifications" />
             </button>
         </div>
-
-
     </nav>
 
-
-   
     <!-- HOME PAGE -->
     <div class="panel-container">
         <div class="head">
-            <h6  class="admin-panel-text">Admin Panel</h6>
+            <h6  class="head-text">Admin Panel</h6>
             <!-- Real-time clock -->
             <div class="time-text" id="real-time-clock">Loading...</div>
            
@@ -118,10 +105,8 @@ try {
                 <tbody class="deets">
                 ';
 
-
                 foreach ($reservations as $fetch_reservations) {
             ?>
-           
                 <tr class="row1">
                    
                     <td class="deets-id <?php echo strtolower($fetch_reservations['s_service']) === 'pet hotel' ? 'row-hotel' : 'row-daycare'; ?>">
@@ -305,8 +290,7 @@ try {
         </div>
     </div>
 </div>
-    <script src="admin.js">
-    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

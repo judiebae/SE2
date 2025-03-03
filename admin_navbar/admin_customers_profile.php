@@ -39,7 +39,8 @@ $transactions = getTransactions();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Customer Profile</title>
-    <link rel="stylesheet" href="admin_navbar.css">
+    <link rel="stylesheet" href="admin-css/admin_header2.css">
+    <link rel="stylesheet" href="admin-css/admin_customer_profile.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #e8e8e8; }
@@ -48,7 +49,7 @@ $transactions = getTransactions();
 <body>
     <!-- NAVIGATION BAR -->
     <nav class="nav-bar">
-    <img class="adorafur-logo" src="adorafur-logo.png" alt="Adorafur Logo" />
+    <img class="adorafur-logo" src="admin-pics/adorafur-logo.png" alt="Adorafur Logo" />
       <div class="nav-container">
 
           <div class="home-button">
@@ -71,29 +72,33 @@ $transactions = getTransactions();
 
       <!-- HEADER -->
       <div class="header-img-container">
-      </div>
+            <button id="notificationButton">
+                <img class="notifications" src="admin-pics/notification-bell.png" alt="Notifications" />
+            </button>
+        </div>
 
     </nav>
 
     <!-- Main Content -->
     <div class="panel-container">
-        <div class="admin-panel-text">Customers</div>
-        <!-- Real-time clock -->
-        <div class="time-text" id="real-time-clock">Loading...</div>
-        <div class="line-1"></div>
 
+        <div class="head">
+            <div class="head-text">Customers</div>
+            <div class="time-text" id="real-time-clock">Loading...</div>
+        </div>
+        
         <div class="profile-box">
             <!-- User Section -->
             <div class="user-section">
                 <a href="admin_customers.php">
-                    <img src="back-icon.png" class="back-icon" alt="Back">
+                    <img src="admin-pics/back-icon.png" class="back-icon" alt="Back">
                 </a>
-                <img src="crown.png" class="crown-img">
+                <img src="admin-pics/crown.png" class="crown-img">
                 <div class="user-name"><?php echo $customer['name']; ?></div>
                 <div class="gd-status">
                     <?php echo $customer['status']; ?> Member
                     <button id="openModalBtn" class="open-btn">
-                        <img src="edit-icon.png" class="edit-img" alt="Edit">
+                        <img src="admin-pics/edit-icon.png" class="edit-img" alt="Edit">
                     </button>
                 </div>
                 <div class="pet-card">
@@ -149,7 +154,7 @@ $transactions = getTransactions();
     <div id="membershipModal" class="modal">
         <div class="modal-content">
 
-            <img src="memb-modal-header.png" class="status-header">
+            <img src="admin-pics/memb-modal-header.png" class="status-header">
             <h2 class="memb-status-header">Membership Status Update</h2>
             <form id="membershipForm">
                 <div style="display: flex;">
