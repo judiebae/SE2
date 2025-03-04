@@ -12,6 +12,7 @@ $sql = "SELECT
             c.customer_contact_number AS owner_num,
             pay.payment_status AS pay_status,
             pay.payment_method AS pay_method,
+            pay.payment_reference_number AS pay_reference_number,
             DATE(b.booking_check_in) AS b_in,
             DATE(b.booking_check_out) AS b_out
         FROM booking_fact_table b
@@ -50,10 +51,23 @@ try {
     <script src="admin.js"></script>
 
     <title>Admin Homepage</title>
+
+    <script>
+    function toggleOtherPaymentMode() {
+        var paymentMode = document.getElementById("paymentModeAdd").value;
+        var otherInput = document.getElementById("otherPaymentMode");
+        if (paymentMode === "others") {
+            otherInput.classList.remove("d-none");
+        } else {
+            otherInput.classList.add("d-none");
+            otherInput.value = ""; // Clear input when not needed
+        }
+    }
+</script>
    
 </head>
 
-<body>
+<body style="background-color: #eee;">
     <!-- NAVIGATION BAR -->
     <nav class="nav-bar">
         <img class="adorafur-logo" src="admin-pics/adorafur-logo.png" alt="Adorafur Logo" />
@@ -121,7 +135,10 @@ try {
                         data-service="<?php echo htmlspecialchars($fetch_reservations['s_service']); ?>"
                         data-check-in="<?php echo htmlspecialchars($fetch_reservations['b_in']); ?>"
                         data-check-out="<?php echo htmlspecialchars($fetch_reservations['b_out']); ?>"
-                        data-payment-status="<?php echo htmlspecialchars($fetch_reservations['pay_status']); ?>">
+                        data-payment-status="<?php echo htmlspecialchars($fetch_reservations['pay_status']); ?>"
+                        data-mop="<?php echo htmlspecialchars($fetch_reservations['pay_mop'])?>"
+                        data-reference-number="<?php echo htmlspecialchars($fetch_reservations['pay_reference'])?>"
+
                             <?php echo htmlspecialchars($fetch_reservations['b_id']); ?>
                         </button>
                     </td>
@@ -189,31 +206,31 @@ try {
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Owner Name:</label>
-                                <input type="text" class="form-control" name="ownerName" id="ownerName">
+                                <input type="text" class="form-control" name="ownerName" id="ownerName" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Contact:</label>
-                                <input type="text" class="form-control" name="contact" id="contact">
+                                <input type="text" class="form-control" name="contact" id="contact" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Pet Name:</label>
-                                <input type="text" class="form-control" name="petName" id="petName">
+                                <input type="text" class="form-control" name="petName" id="petName" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Pet Type:</label>
-                                <input type="text" class="form-control" name="petType" id="petType">
+                                <input type="text" class="form-control" name="petType" id="petType" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Pet Breed:</label>
-                                <input type="text" class="form-control" name="petBreed" id="petBreed">
+                                <input type="text" class="form-control" name="petBreed" id="petBreed" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Service:</label>
-                                <input type="text" class="form-control" name="service" id="service">
+                                <input type="text" class="form-control" name="service" id="service" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Check-in:</label>
-                                <input type="text" class="form-control" name="checkIn" id="checkIn">
+                                <input type="text" class="form-control" name="checkIn" id="checkIn" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Check-out:</label>
@@ -251,25 +268,32 @@ try {
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label class="form-label fw-bold text-brown mb-2">Amount Paid:</label>
-                                                        <input type="text" class="form-control" name="amountPaid" value="PHP 200.00" id="amountPaid">
+                                                        <input type="text" class="form-control" name="amountPaid" id="amountPaid">
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label class="form-label fw-bold text-brown mb-2">Mode of Payment:</label>
-                                                        <input type="text" class="form-control" name="paymentModeAdd" value="Gcash" id="paymentModeAdd">
-                                                    </div>
+                                                <label class="form-label fw-bold text-brown mb-2">Mode of Payment:</label>
+                                                <select class="form-control" name="paymentModeAdd" id="paymentModeAdd" onchange="toggleOtherPaymentMode()">
+                                                    <option value="cash">Cash</option>
+                                                    <option value="gcash">GCash</option>
+                                                    <option value="maya">Maya</option>
+                                                    <option value="others">Others</option>
+                                                </select>
+                                                <input type="text" class="form-control mt-2 d-none" name="otherPaymentMode" id="otherPaymentMode" placeholder="Please specify">
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label class="form-label fw-bold text-brown mb-2">Balance:</label>
-                                                        <input type="text" class="form-control" name="balanceAdd" value="PHP 200.00" id="balanceAdd">
+                                                        <input type="text" class="form-control" name="balanceAdd" id="balanceAdd">
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-                                                        <label class="form-label fw-bold text-brown mb-2">Payment Status:</label>
-                                                        <input type="text" class="form-control" name="paymentStatusAdd" value="Downpayment" id="paymentStatusAdd">
+                                                    <label class="form-label fw-bold text-brown mb-2">Payment Status:</label>
+                                                    <select class="form-control" name="paymentStatusAdd" id="paymentStatusAdd">
+                                                        <option value="fully_paid">Fully Paid</option>
+                                                        <option value="down_payment">Down Payment</option>
+                                                    </select>
                                                     </div>
                                                 </div>
                                             </div>

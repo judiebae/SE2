@@ -44,9 +44,11 @@
     border-right:  1px solid #eee;
     border-top: 2px solid #eee;
     border-bottom: 2px solid #eee;
-    color: #eee;
 }
 
+.deets-date span{
+    color: #eee;
+}
 
 .row1{
     border: 10px solid #eee;

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="admin-css/admin_customer.css">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
       
+    <script src="admin.js"></script>
     <title>Admin Customers</title>
 </head> 
 
@@ -51,8 +52,8 @@
       </div>
 
       <div class="search-box">
-        <input type="text" placeholder="Search">
-        <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></i></span>
+        <input type="text" id="searchInput" placeholder="Search">
+        <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></span>
       </div>
       
       <table class="customer-list">
@@ -63,17 +64,48 @@
           <th class="date"></th>
         </thead>
         
-        <tbody class="deets">
-          <tr class="row1">
-            <td class="customer-name ">  
-              <a href="admin_customers_profile.php">kIko</a></td>
-            <td class="pets-name ">ellie</td>
-            <td class="mem-status">gold</td>
-            <td class="dates">
-              <strong>Registered Date:</strong> 06/05/2024<br>
-              <strong>Expiry Date:</strong> 06/05/2026
-            </td>
-          </tr>
+        <tbody class="deets"  id="customerTableBody">
+          
+    <?php include("../connect.php");
+
+    try {
+      
+      $sql = "SELECT 
+                c.customer_id, 
+                CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS owner_name,
+                GROUP_CONCAT(p.pet_name SEPARATOR ', ') AS pet_names,
+                c.customer_membership_status as membership_status
+                FROM customer c
+                LEFT JOIN 
+                  pet p ON c.customer_id = p.customer_id
+                GROUP BY 
+                  c.customer_id, c.customer_first_name";
+              
+              // Prepare and execute the statement
+      $stmt = $conn->prepare($sql);
+      $stmt->execute();
+
+      if ($stmt->rowCount() > 0) {
+
+        while($row =$stmt->fetch(PDO::FETCH_ASSOC)){
+          echo "<tr class='row1'>";
+          echo "<td class='customer-name'> <a href='admin_customers_profile.php?id=" . htmlspecialchars($row["customer_id"]) . "'>" . htmlspecialchars($row["owner_name"]) . "</a></td>";
+          echo "<td class='pets-name'>". htmlspecialchars($row["pet_names"] ?? 'No pets') ."</td>";
+          echo "<td class='mem-status'>". htmlspecialchars($row["membership_status"] ?? 'None') . "</td>";
+          echo "<td class='dates'>";
+          echo "<strong>Registered Date:</strong>". ($row["registration_date"] ? date('m/d/Y', strtotime($row["registration_date"])) : 'N/A') ."<br>";
+          echo "<strong>Expiry Date:</strong>" . ($row["expiry_date"] ? date('m/d/Y', strtotime($row["expiry_date"])) : 'N/A');
+          echo "</td>";
+          echo "</tr>";
+        }
+      } else {
+        echo "<tr><td colspan='4'>No customers found</td></tr>";
+      }
+    } catch (PDOException $e) {
+      echo "<tr><td colspan='4'>Database error: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
+  }
+    ?> 
+            
         </tbody>
       </table>  
 
@@ -82,6 +114,22 @@
 
   </div>
 
-    <script src="admin.js"></script>
+    <script> 
+      document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#customerTableBody tr');
+        
+        rows.forEach(row => {
+            const customerName = row.querySelector('.customer-name').textContent.toLowerCase();
+            const petName = row.querySelector('.pets-name').textContent.toLowerCase();
+            
+            if (customerName.includes(searchValue) || petName.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    </script>
 </body>
 </html>
