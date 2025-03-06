@@ -1,4 +1,104 @@
 
+/* BOOKING FILTER STYLING */
+.by-service-frame,
+.pet-hotel-cont,
+.pet-daycare-cont {
+  background: #ffffff;
+  border-radius: 10px;
+  width: 450px;
+  height: 48px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 160px;
+  margin-top: px; /* Ensures items push each other down */
+}
+
+.by-service {
+  color: #663a2c;
+  font-family: "BalooTammudu2-Medium", sans-serif;
+  font-size: 21px;
+  font-weight: 550;
+}
+
+.pet-hotel-text,
+.pet-daycare-text {
+  color: #d48d64;
+  font-family: "BalooTammudu2-Medium", sans-serif;
+  font-size: 21px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+
+/* Checkbox Styling */
+.pet-hotel-checkbox {
+    width: 18px;
+    height: 18px;
+    appearance: none;
+    border-radius: 5px;
+    border: 2.5px solid #184788; /* Border color */
+    background-color: #fff; /* Default background */
+    transition: background-color 0.1s ease;
+  }
+
+  .daycare-checkbox {
+    width: 18px;
+    height: 18px;
+    appearance: none;
+    border-radius: 5px;
+    border: 2.5px solid #ffcc00; /* Border color */
+    background-color: #fff; /* Default background */
+    transition: background-color 0.1s ease;
+  }
+  
+/* Style for unchecked state */
+   .pet-hotel-checkbox:checked{
+    background-color: transparent; /* Keep transparent background */
+    background-image: url('checkboxes/checkbox1-active.png'); /* Active state icon */
+    background-size: contain;
+    background-repeat: no-repeat;
+    border: none; /* Remove the border if you only want to show the icon */
+    background-color: #184788; /* Default background */
+    
+  }
+  
+   .daycare-checkbox:checked{
+    background-color: transparent; /* Keep transparent background */
+    background-image: url('checkboxes/checkbox2-active.png'); /* Active state icon */
+    background-size: contain;
+    background-repeat: no-repeat;
+    border: none; /* Remove the border if you only want to show the icon */
+    background-color: #ffcc00; /* Border color */
+  }
+  
+  /* Label Styling */
+  .pet-hotel-text,
+  .pet-daycare-text {
+    color: #d48d64;
+    font-family: "BalooTammudu2-Medium", sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    margin-left: 8px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  /* Container Styling for Flex Layout */
+  .pet-hotel-cont,
+  .pet-daycare-cont {
+    background: #ffffff;
+    border-radius: 10px;
+    width: 276px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 70px;
+  }
+
+
 /*BOOKINGS*/
 
 .bookings-weekly {

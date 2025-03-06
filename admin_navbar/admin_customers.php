@@ -71,15 +71,15 @@
     try {
       
       $sql = "SELECT 
-                c.customer_id, 
-                CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS owner_name,
+                c.c_id, 
+                CONCAT(c.c_first_name, ' ', c.c_last_name) AS owner_name,
                 GROUP_CONCAT(p.pet_name SEPARATOR ', ') AS pet_names,
-                c.customer_membership_status as membership_status
+                c.c_membership_status as membership_status
                 FROM customer c
                 LEFT JOIN 
-                  pet p ON c.customer_id = p.customer_id
+                  pet p ON c.c_id = p.customer_id
                 GROUP BY 
-                  c.customer_id, c.customer_first_name";
+                  c.c_id, c.c_first_name";
               
               // Prepare and execute the statement
       $stmt = $conn->prepare($sql);
@@ -89,7 +89,7 @@
 
         while($row =$stmt->fetch(PDO::FETCH_ASSOC)){
           echo "<tr class='row1'>";
-          echo "<td class='customer-name'> <a href='admin_customers_profile.php?id=" . htmlspecialchars($row["customer_id"]) . "'>" . htmlspecialchars($row["owner_name"]) . "</a></td>";
+          echo "<td class='customer-name'> <a href='admin_customers_profile.php?id=" . htmlspecialchars($row["c_id"]) . "'>" . htmlspecialchars($row["owner_name"]) . "</a></td>";
           echo "<td class='pets-name'>". htmlspecialchars($row["pet_names"] ?? 'No pets') ."</td>";
           echo "<td class='mem-status'>". htmlspecialchars($row["membership_status"] ?? 'None') . "</td>";
           echo "<td class='dates'>";

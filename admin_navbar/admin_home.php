@@ -8,18 +8,18 @@ $sql = "SELECT
             p.pet_breed AS p_breed,
             p.pet_size AS p_size,
             s.service_name AS s_service,
-            CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS owner_name,
-            c.customer_contact_number AS owner_num,
-            pay.payment_status AS pay_status,
-            pay.payment_method AS pay_method,
-            pay.payment_reference_number AS pay_reference_number,
+            CONCAT(c.c_first_name, ' ', c.c_last_name) AS owner_name,
+            c.c_contact_number AS owner_num,
+            pay.pay_status AS pay_status,
+            pay.pay_method AS pay_mop,
+            pay.pay_reference_number AS pay_reference_number,
             DATE(b.booking_check_in) AS b_in,
             DATE(b.booking_check_out) AS b_out
-        FROM booking_fact_table b
+        FROM bookings b
         JOIN pet p ON b.pet_id = p.pet_id
-        JOIN customer c ON p.customer_id = c.customer_id
+        JOIN customer c ON p.customer_id = c.c_id
         JOIN service s ON b.service_id = s.service_id
-        JOIN payment pay ON b.payment_id = pay.payment_id
+        JOIN payment pay ON b.payment_id = pay.pay_id
         WHERE b.booking_status <> 'Cancelled'
         ORDER BY
             CASE
@@ -137,7 +137,7 @@ try {
                         data-check-out="<?php echo htmlspecialchars($fetch_reservations['b_out']); ?>"
                         data-payment-status="<?php echo htmlspecialchars($fetch_reservations['pay_status']); ?>"
                         data-mop="<?php echo htmlspecialchars($fetch_reservations['pay_mop'])?>"
-                        data-reference-number="<?php echo htmlspecialchars($fetch_reservations['pay_reference'])?>"
+                        data-reference-number="<?php echo htmlspecialchars($fetch_reservations['pay_reference_number'])?>"
 
                             <?php echo htmlspecialchars($fetch_reservations['b_id']); ?>
                         </button>
