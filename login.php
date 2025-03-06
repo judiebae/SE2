@@ -1,85 +1,91 @@
 <?php
- 
-//  session_start();
- 
- include("connect.php");
+include("connect.php");
 
- if (isset($_SESSION['login_error'])) {
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (isset($_SESSION['login_error'])) {
     echo "<div class='alert alert-danger'>" . $_SESSION['login_error'] . "</div>";
     unset($_SESSION['login_error']);
 }
 
- if ($_SERVER["REQUEST_METHOD"] == "POST") {
-   if (isset($_POST['action'])) {
-       switch ($_POST['action']) {
-           case 'register':
-               handleRegister($conn);
-               break;
-           case 'login':
-               handleLogin($conn);
-               break;
-           case 'forgotPassword':
-               handleForgotPassword($conn);
-               break;
-       }
-   }
- }
- 
- function handleRegister($conn) {
-   $firstName = $_POST['firstName'];
-   $lastName = $_POST['lastName'];
-   $email = $_POST['email'];
-   $contactNumber = $_POST['contactNumber'];
-   $password = $_POST['password'];
-   $repeatPassword = $_POST['repeatPassword'];
-   
-   if ($password !== $repeatPassword) {
-       echo "Passwords do not match.";
-       return;
-   }
- 
-   if (!preg_match('/^09[0-9]{9}$/', $contactNumber)) {
-       echo "Invalid Philippine phone number format.";
-       return;
-   }
- 
-   $stmt = $conn->prepare("SELECT * FROM users WHERE email = :email");
-   $stmt->bindParam(':email', $email);
-   $stmt->execute();
- 
-   if ($stmt->rowCount() > 0) {
-       echo "Email already registered.";
-       return;
-   }
- 
-   $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-   $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, contact_number, password) VALUES (:firstName, :lastName, :email, :contactNumber, :password)");
-   $stmt->bindParam(':firstName', $firstName);
-   $stmt->bindParam(':lastName', $lastName);
-   $stmt->bindParam(':email', $email);
-   $stmt->bindParam(':contactNumber', $contactNumber);
-   $stmt->bindParam(':password', $hashedPassword);
- 
-   if ($stmt->execute()) {
-       echo "Registration successful!";
-   } else {
-       echo "Error during registration.";
-   }
- }
- 
- function handleLogin($conn) {
-   $email = $_POST['email'];
-   $password = $_POST['password'];
- 
-   $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['action'])) {
+        switch ($_POST['action']) {
+            case 'register':
+                handleRegister($conn);
+                break;
+            case 'login':
+                handleLogin($conn);
+                break;
+            case 'forgotPassword':
+                handleForgotPassword($conn);
+                break;
+        }
+    }
+}
+
+function handleRegister($conn) {
+    $firstName = trim($_POST['firstName']);
+    $lastName = trim($_POST['lastName']);
+    $email = trim($_POST['email']); // Matches 'customer_email' in the database
+    $contactNumber = trim($_POST['contactNumber']);
+    $password = $_POST['password'];
+    $repeatPassword = $_POST['repeatPassword'];
+
+    if ($password !== $repeatPassword) {
+        echo "Passwords do not match.";
+        return;
+    }
+
+    if (!preg_match('/^09[0-9]{9}$/', $contactNumber)) {
+        echo "Invalid Philippine phone number format.";
+        return;
+    }
+
+    // Change 'email' to 'customer_email'
+    $stmt = $conn->prepare("SELECT * FROM customer WHERE customer_email = :email");
+    $stmt->bindParam(':email', $email);
+    $stmt->execute();
+
+    if ($stmt->rowCount() > 0) {
+        echo "Email already registered.";
+        return;
+    }
+
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+    // Change column names to match the database
+    $stmt = $conn->prepare("INSERT INTO customer (customer_first_name, customer_last_name, customer_email, customer_contact_number, customer_password) 
+                            VALUES (:firstName, :lastName, :email, :contactNumber, :password)");
+    $stmt->bindParam(':firstName', $firstName);
+    $stmt->bindParam(':lastName', $lastName);
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':contactNumber', $contactNumber);
+    $stmt->bindParam(':password', $hashedPassword);
+
+    if ($stmt->execute()) {
+        echo "Registration successful!";
+    } else {
+        echo "Error during registration.";
+    }
+}
+
+function handleLogin($conn) {
+    $email = trim($_POST['email']); // Matches 'customer_email' in the database
+    $password = $_POST['password'];
+
+    // Fix: Change 'email' to 'customer_email'
+    $stmt = $conn->prepare("SELECT * FROM customer WHERE customer_email = :email");
+    $stmt->bindParam(':email', $email);
     $stmt->execute();
     
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id'] = $user['id']; 
+    if ($user && password_verify($password, $user['customer_password'])) {
+        $_SESSION['user_id'] = $user['customer_id']; // Fix: Use 'customer_id'
+        $_SESSION['user_name'] = $user['customer_first_name']; // Optional: Store the first name
         header("Location: profile.php");
         exit();
     } else {
@@ -87,7 +93,7 @@
         header("Location: login.php");
         exit();
     }
- }
+}
 
 ?>
 
