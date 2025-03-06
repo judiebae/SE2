@@ -1,43 +1,37 @@
 <?php
-// Database connection using PDO
-try {
-    $host = 'localhost';
-    $dbname = 'fur_a_paw_intments';
-    $username = 'root';
-    $password = '';
-    
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die(json_encode(['error' => 'Connection failed: ' . $e->getMessage()]));
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+include("connect.php");
+
+if (!isset($_SESSION['user_id'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Not authenticated']);
+    exit();
 }
 
-// Get pet ID from request
-$petId = isset($_GET['pet_id']) ? (int)$_GET['pet_id'] : 0;
+$user_id = $_SESSION['user_id'];
 
-if ($petId > 0) {
-    // Fetch pet data
-    $stmt = $pdo->prepare("SELECT * FROM pet WHERE pet_id = ?");
-    $stmt->execute([$petId]);
-    $pet = $stmt->fetch();
+if (isset($_GET['pet_id'])) {
+    $pet_id = $_GET['pet_id'];
     
-    if ($pet) {
-        // Format dates for HTML input
-        if ($pet['pet_vaccination_date_administered']) {
-            $pet['pet_vaccination_date_administered'] = date('Y-m-d', strtotime($pet['pet_vaccination_date_administered']));
-        }
-        
-        if ($pet['pet_vaccination_date_expiry']) {
-            $pet['pet_vaccination_date_expiry'] = date('Y-m-d', strtotime($pet['pet_vaccination_date_expiry']));
-        }
-        
-        // Return pet data as JSON
-        echo json_encode($pet);
+    // Verify pet belongs to user
+    $query = "SELECT * FROM pets WHERE id = :pet_id AND customer_id = :user_id";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(':pet_id', $pet_id);
+    $stmt->bindParam(':user_id', $user_id);
+    $stmt->execute();
+    
+    if ($stmt->rowCount() > 0) {
+        $pet_data = $stmt->fetch(PDO::FETCH_ASSOC);
+        header('Content-Type: application/json');
+        echo json_encode($pet_data);
     } else {
-        echo json_encode(['error' => 'Pet not found']);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Pet not found or access denied']);
     }
 } else {
-    echo json_encode(['error' => 'Invalid pet ID']);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'No pet ID provided']);
 }
 ?>

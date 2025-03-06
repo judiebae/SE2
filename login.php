@@ -103,7 +103,7 @@ function handleLogin($conn) {
             $_SESSION['login_email'] = $email;
             
             // Redirect to profile page
-            header("Location: hehe.php");
+            header("Location: profile.php");
             exit();
         }
 

@@ -1,282 +1,62 @@
 <?php
-// Start session to manage user state
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+include("connect.php");
 
-// Database connection using PDO
-try {
-    $host = 'localhost';
-    $dbname = 'fur_a_paw_intments';
-    $username = 'root';
-    $password = '';
-    
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
+// Check if user is logged in
+if (!isset($_SESSION['c_id'])) {
+    // Redirect to login page if not logged in
+    header("Location: login.php");
+    exit();
 }
 
-// For demonstration, let's assume we have a logged-in user with ID 9
-// In a real application, you would get this from the session after login
-$customerId = 9;
+// Get user ID from session
+$user_id = $_SESSION['c_id'];
 
-// Fetch customer data
-$stmt = $pdo->prepare("
-    SELECT c.*, m.membership_status 
-    FROM customer c 
-    LEFT JOIN membership_status m ON c.c_membership_status = m.membership_id 
-    WHERE c.c_id = ?
-");
-$stmt->execute([$customerId]);
-$customer = $stmt->fetch();
+// Fetch customer information
+$customer_query = "SELECT c.*, m.membership_status FROM customer c
+                    LEFT JOIN membership_status m on m.membership_id = c.c_membership_status WHERE c_id = :c_id";
 
-// Fetch customer's pets
-$stmt = $pdo->prepare("SELECT * FROM pet WHERE customer_id = ?");
-$stmt->execute([$customerId]);
-$pets = $stmt->fetchAll();
+$customer_stmt = $conn->prepare($customer_query);
+$customer_stmt->bindParam(':c_id', $user_id);
+$customer_stmt->execute();
+$fetch_cust_info = $customer_stmt->fetch(PDO::FETCH_ASSOC);
 
-// Fetch customer's bookings (current and history)
-$stmt = $pdo->prepare("
-    SELECT b.*, p.pet_name, p.pet_picture, s.service_name, s.service_variant, s.service_rate 
-    FROM bookings b
-    JOIN pet p ON b.pet_id = p.pet_id
-    JOIN service s ON b.service_id = s.service_id
-    WHERE p.customer_id = ?
-    ORDER BY b.booking_check_in DESC
-");
-$stmt->execute([$customerId]);
-$bookings = $stmt->fetchAll();
+// Fetch pet information
+$pet_query = "SELECT * FROM pet WHERE customer_id = :c_id";
+$pet_stmt = $conn->prepare($pet_query);
+$pet_stmt->bindParam(':c_id', $user_id);
+$pet_stmt->execute();
+$pets = $pet_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Process form submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Update user profile
-    if (isset($_POST['update_profile'])) {
-        $firstName = $_POST['firstName'];
-        $lastName = $_POST['lastName'];
-        $email = $_POST['email'];
-        $contactNumber = $_POST['contactNumber'];
-        $modeOfCommunication = $_POST['modeOfCommunication'];
-        
-        // Handle profile picture upload
-        $profilePicture = $customer['c_profile_picture']; // Default to current picture
-        
-        if (isset($_FILES['profilePicture']) && $_FILES['profilePicture']['error'] === 0) {
-            $uploadDir = 'uploads/profiles/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-            
-            $fileName = uniqid() . '_' . basename($_FILES['profilePicture']['name']);
-            $uploadFile = $uploadDir . $fileName;
-            
-            if (move_uploaded_file($_FILES['profilePicture']['tmp_name'], $uploadFile)) {
-                $profilePicture = $fileName;
-            }
-        }
-        
-        // Update customer in database
-        $stmt = $pdo->prepare("
-            UPDATE customer 
-            SET c_first_name = ?, c_last_name = ?, c_email = ?, 
-                c_contact_number = ?, c_mode_of_communication = ?, c_profile_picture = ?
-            WHERE c_id = ?
-        ");
-        $stmt->execute([$firstName, $lastName, $email, $contactNumber, $modeOfCommunication, $profilePicture, $customerId]);
-        
-        // Redirect to refresh the page
-        header("Location: profile.php");
-        exit;
-    }
-    
-    // Cancel booking
-    if (isset($_POST['cancel_booking'])) {
-        $bookingId = $_POST['booking_id'];
-        $reason = $_POST['cancellation_reason'];
-        
-        $stmt = $pdo->prepare("UPDATE bookings SET booking_status = 'Cancelled' WHERE booking_id = ?");
-        $stmt->execute([$bookingId]);
-        
-        // Redirect to refresh the page
-        header("Location: profile.php");
-        exit;
-    }
-    
-    // Update pet information
-    if (isset($_POST['update_pet'])) {
-        $petId = $_POST['pet_id'];
-        $petName = $_POST['petName'];
-        $petSize = $_POST['petSize'];
-        $petBreed = $_POST['petBreed'];
-        $petAge = $_POST['petAge'];
-        $petGender = $_POST['petGender'];
-        $petDescription = $_POST['petDescription'];
-        $petVaccinationDate = $_POST['petVaccinationDate'];
-        $petVaccinationExpiry = $_POST['petVaccinationExpiry'];
-        $petVaccinationStatus = $_POST['petVaccinationStatus'];
-        $petSpecialInstruction = $_POST['petSpecialInstruction'];
-        
-        // Handle pet picture upload
-        $petPicture = null;
-        if (isset($_POST['current_pet_picture'])) {
-            $petPicture = $_POST['current_pet_picture'];
-        }
-        
-        if (isset($_FILES['petPicture']) && $_FILES['petPicture']['error'] === 0) {
-            $uploadDir = 'uploads/pets/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-            
-            $fileName = uniqid() . '_' . basename($_FILES['petPicture']['name']);
-            $uploadFile = $uploadDir . $fileName;
-            
-            if (move_uploaded_file($_FILES['petPicture']['tmp_name'], $uploadFile)) {
-                $petPicture = $fileName;
-            }
-        }
-        
-        // Handle vaccination card upload
-        $petVaccinationCard = null;
-        if (isset($_POST['current_vaccination_card'])) {
-            $petVaccinationCard = $_POST['current_vaccination_card'];
-        }
-        
-        if (isset($_FILES['petVaccinationCard']) && $_FILES['petVaccinationCard']['error'] === 0) {
-            $uploadDir = 'uploads/vaccination/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-            
-            $fileName = uniqid() . '_' . basename($_FILES['petVaccinationCard']['name']);
-            $uploadFile = $uploadDir . $fileName;
-            
-            if (move_uploaded_file($_FILES['petVaccinationCard']['tmp_name'], $uploadFile)) {
-                $petVaccinationCard = $fileName;
-            }
-        }
-        
-        // Update pet in database
-        $stmt = $pdo->prepare("
-            UPDATE pet 
-            SET pet_name = ?, pet_size = ?, pet_breed = ?, pet_age = ?, pet_gender = ?, 
-                pet_description = ?, pet_vaccination_date_administered = ?, 
-                pet_vaccination_date_expiry = ?, pet_vaccination_status = ?, 
-                pet_special_instruction = ?, pet_picture = ?, pet_vaccination_card = ?
-            WHERE pet_id = ? AND customer_id = ?
-        ");
-        $stmt->execute([
-            $petName, $petSize, $petBreed, $petAge, $petGender, $petDescription,
-            $petVaccinationDate, $petVaccinationExpiry, $petVaccinationStatus,
-            $petSpecialInstruction, $petPicture, $petVaccinationCard, $petId, $customerId
-        ]);
-        
-        // Redirect to refresh the page
-        header("Location: profile.php");
-        exit;
-    }
-    
-    // Delete pet
-    if (isset($_POST['delete_pet'])) {
-        $petId = $_POST['pet_id'];
-        
-        $stmt = $pdo->prepare("DELETE FROM pet WHERE pet_id = ? AND customer_id = ?");
-        $stmt->execute([$petId, $customerId]);
-        
-        // Redirect to refresh the page
-        header("Location: profile.php");
-        exit;
-    }
-    
-    // Register new pet
-    if (isset($_POST['register_pet'])) {
-        $petName = $_POST['petName'];
-        $petSize = $_POST['petSize'];
-        $petBreed = $_POST['petBreed'];
-        $petAge = $_POST['petAge'];
-        $petGender = $_POST['petGender'];
-        $petDescription = $_POST['petDescription'];
-        $petVaccinationDate = $_POST['petVaccinationDate'] ?: null;
-        $petVaccinationExpiry = $_POST['petVaccinationExpiry'] ?: null;
-        $petVaccinationStatus = $_POST['petVaccinationStatus'];
-        $petSpecialInstruction = $_POST['petSpecialInstruction'];
-        
-        // Handle pet picture upload
-        $petPicture = null;
-        if (isset($_FILES['petPicture']) && $_FILES['petPicture']['error'] === 0) {
-            $uploadDir = 'uploads/pets/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-            
-            $fileName = uniqid() . '_' . basename($_FILES['petPicture']['name']);
-            $uploadFile = $uploadDir . $fileName;
-            
-            if (move_uploaded_file($_FILES['petPicture']['tmp_name'], $uploadFile)) {
-                $petPicture = $fileName;
-            }
-        }
-        
-        // Handle vaccination card upload
-        $petVaccinationCard = null;
-        if (isset($_FILES['petVaccinationCard']) && $_FILES['petVaccinationCard']['error'] === 0) {
-            $uploadDir = 'uploads/vaccination/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-            
-            $fileName = uniqid() . '_' . basename($_FILES['petVaccinationCard']['name']);
-            $uploadFile = $uploadDir . $fileName;
-            
-            if (move_uploaded_file($_FILES['petVaccinationCard']['tmp_name'], $uploadFile)) {
-                $petVaccinationCard = $fileName;
-            }
-        }
-        
-        // Insert new pet into database
-        $stmt = $pdo->prepare("
-            INSERT INTO pet (
-                customer_id, pet_name, pet_size, pet_breed, pet_age, pet_gender, 
-                pet_description, pet_vaccination_date_administered, pet_vaccination_date_expiry, 
-                pet_vaccination_status, pet_special_instruction, pet_picture, pet_vaccination_card
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([
-            $customerId, $petName, $petSize, $petBreed, $petAge, $petGender, 
-            $petDescription, $petVaccinationDate, $petVaccinationExpiry, 
-            $petVaccinationStatus, $petSpecialInstruction, $petPicture, $petVaccinationCard
-        ]);
-        
-        // Redirect to refresh the page
-        header("Location: profile.php");
-        exit;
-    }
-}
+// Fetch current reservations
+$current_reservations_query = "SELECT b.*, p.*, pay.pay_status, s.service_name FROM bookings b
+                                LEFT JOIN pet p on p.pet_id = b.pet_id
+                                LEFT JOIN payment pay on pay.pay_id = b.payment_id
+                                LEFT JOIN service s on s.service_id = b.service_id
+                                WHERE p.customer_id = :c_id AND b.booking_status != 'Completed' AND b.booking_status != 'Cancelled' ORDER BY booking_check_in  DESC";
 
-// Helper function to display profile picture
-function getProfilePicture($picture) {
-    if ($picture && file_exists('uploads/profiles/' . $picture)) {
-        return 'uploads/profiles/' . $picture;
-    }
-    return 'assets/default-profile.jpg';
-}
+$current_reservations_stmt = $conn->prepare($current_reservations_query);
+$current_reservations_stmt->bindParam(':c_id', $user_id);
+$current_reservations_stmt->execute();
+$current_reservations = $current_reservations_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Helper function to display pet picture
-function getPetPicture($picture) {
-    if ($picture && file_exists('uploads/pets/' . $picture)) {
-        return 'uploads/pets/' . $picture;
-    }
-    return 'assets/default-pet.jpg';
-}
+// Fetch reservation history
+$history_query = "SELECT b.*, p.*, pay.pay_status, s.service_name FROM bookings b
+                                LEFT JOIN pet p on p.pet_id = b.pet_id
+                                LEFT JOIN payment pay on pay.pay_id = b.payment_id
+                                LEFT JOIN service s on s.service_id = b.service_id
+                                WHERE p.customer_id = :c_id AND (b.booking_status = 'Completed' OR b.booking_status = 'Cancelled') ORDER BY booking_check_in DESC";
+$history_stmt = $conn->prepare($history_query);
+$history_stmt->bindParam(':c_id', $user_id);
+$history_stmt->execute();
+$reservation_history = $history_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Format date for display
-function formatDate($date) {
-    return date('M d, Y', strtotime($date));
-}
-
-// Format datetime for display
-function formatDateTime($datetime) {
-    return date('M d, Y h:i A', strtotime($datetime));
-}
+// Handle profile picture path
+$profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_cust_info['profile_picture']) 
+    ? $fetch_cust_info['profile_picture'] 
+    : "Profile-Pics/profile_icon.png";
 ?>
 
 <!DOCTYPE html>
@@ -284,652 +64,764 @@ function formatDateTime($datetime) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile - Fur-A-Paw-Intments</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>User Profile</title>
     <link rel="stylesheet" href="Profile.css">
     <link rel="stylesheet" href="headers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div class="profile">
-        <section>
-            <div class="col-left">
-                <div class="user-header">
-                    <div class="user-info">
-                        <h1 class="personalinfo">Personal Information</h1>
-                        <i class="fa-solid fa-pen-to-square edit-icon" data-bs-toggle="modal" data-bs-target="#editProfile"></i>
-                    </div>
-                    <div class="notif-icon">
-                        <i class="fa-solid fa-bell"></i>
-                    </div>
+
+<div class="lHead">
+    <img src="Header-Pics/PIC4.png" alt="pic4" class="paws1">
+    <img src="Header-Pics/PIC2.png" alt="pic2" class="paw1">
+    <img src="Header-Pics/logo.png" alt="LOGO" class="logos">
+    <img src="Header-Pics/PIC3.png" alt="pic3" class="paw2">
+    <img src="Header-Pics/PIC5.png" alt="pic5" class="paws2">
+</div>
+
+<?php include 'login.php'?>
+<nav class="navbar navbar-expand-lg navbar-dark ">
+    <div class="container">
+        <button class="navbar-toggler shadow-none border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="sidebar offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+            
+            <div class="offcanvas-header text-white border-bottom">
+                <img src="logo.png" alt="LOGO" class="log">
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+
+            <div class="offcanvas-body">
+                <ul class="navbar-nav justify-content-between flex-grow-1 pe-3">
+                    
+                    <!-- about us  -->
+                    <li class="nav-item dropdown ">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        ABOUT US </a>
+                        <ul class="dropdown-menu ">
+                            <li><a class="dropdown-item" href="aboutus.php">House Rules</a></li>
+                            <li><a class="dropdown-item" href="#ourstory">Our Story</a></li>
+                            <li><a class="dropdown-item" href="#time">Opening Hours</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- book  -->
+                    <li class="nav-item dropdown ">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        BOOK </a>
+                        <ul class="dropdown-menu ">
+                            <li><a class="dropdown-item" href="#second-scroll">Book</a></li>
+                            <li><a class="dropdown-item" href="#inclusions">Inclusion and Perks</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="home.php">HOME</a>
+                    </li>
+
+                    <li class="nav-item dropdown ">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        CONTACT US
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="Contact_Us.php">Contact Us</a></li>
+                            <li><a class="dropdown-item" href="#faqs">FAQs</a></li>  
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="logout.php" class="btn btn-primary">LOGOUT</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="profile">
+    <section>
+        <div class="col-left">
+            <div class="user-header">
+                <!-- User Info -->
+                <div class="user-info">
+                    <h6 class="personalinfo">USER INFORMATION</h6>
+                    
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <i class="fa-regular fa-pen-to-square edit-icon"></i>
+                    </button>
                 </div>
-                
-                <div class="user-deets">
-                    <div class="pfp">
-                        <img src="<?php echo getProfilePicture($customer['c_profile_picture']); ?>" alt="Profile Picture" class="profile-icon">
-                        <p class="cusID">Customer ID: <span class="cusNum"><?php echo $customer['c_id']; ?></span></p>
-                        <p class="cusMem"><?php echo $customer['membership_status']; ?></p>
+                <!-- Notification Bell -->
+                <div class="notifBell">
+                    <i class="fa-regular fa-bell notif-icon"></i>
+                </div>      
+            </div>
+
+            <div class="user-deets">
+                <div class="pfp">
+                    <img src="<?php echo $profile_picture; ?>" alt="Profile Picture" class="profile-icon">
+                    <h6 class="cusID">CUSTOMER ID</h6>
+                    <h6 class="cusNum">NO. <?php echo $fetch_cust_info['c_id']; ?></h6>
+                    <h6 class="cusMem"><?php echo $fetch_cust_info['membership_status']; ?> Member</h6>
+                </div>
+
+                <div class="deets">
+                    <div class="name">
+                        <div class="deet1">
+                            <p class="deet">FIRST NAME <strong><?php echo $fetch_cust_info['c_first_name']; ?></strong></p>                    
+                            <hr class="hline">
+                            <p class="deet">CONTACT NUMBER <strong><?php echo $fetch_cust_info['c_contact_number']; ?></strong></p>                    
+                            <hr class="hline">
+                        </div>
+                        <div class="deet2">
+                            <p class="deet">LAST NAME <strong><?php echo $fetch_cust_info['c_last_name']; ?></strong></p>                                            
+                            <hr class="hline">
+                            <p class="deet">EMAIL <strong><?php echo $fetch_cust_info['c_email']; ?></strong></p>  
+                            <hr class="hline">
+                        </div>
                     </div>
                     
-                    <div class="deets">
-                        <div class="name">
-                            <div class="deet1">
-                                <p class="deet">First Name</p>
-                                <hr class="hline">
-                                <p class="deet"><?php echo $customer['c_first_name']; ?></p>
-                            </div>
-                            <div class="deet2">
-                                <p class="deet">Last Name</p>
-                                <hr class="hline">
-                                <p class="deet"><?php echo $customer['c_last_name']; ?></p>
-                            </div>
-                        </div>
-                        
-                        <div class="deet3">
-                            <p class="deet">Email</p>
-                            <hr class="hline">
-                            <p class="deet"><?php echo $customer['c_email']; ?></p>
-                        </div>
-                        
-                        <div class="deet3">
-                            <p class="deet">Contact Number</p>
-                            <hr class="hline">
-                            <p class="deet"><?php echo $customer['c_contact_number']; ?></p>
-                        </div>
-                        
-                        <div class="deet3">
-                            <p class="deet">Mode of Communication</p>
-                            <hr class="hline">
-                            <p class="deet"><?php echo $customer['c_mode_of_communication']; ?></p>
-                        </div>
+                    <div class="deet3">
+                        <p class="deet">ADDRESS <strong><?php echo isset($fetch_cust_info['c_address']) ? htmlspecialchars($fetch_cust_info['c_address']) : 'N/A'; ?></strong></p>                        
+                        <hr class="hline">
+                        <p class="deet">SOCIAL LINK <strong><?php echo isset($fetch_cust_info['c_mode_of_communication']) ? htmlspecialchars($fetch_cust_info['c_mode_of_communication']) : 'N/A'; ?></strong></p>
+                        <hr class="hline">
                     </div>
                 </div>
-                
-                <div class="user-transactions">
-                    <div class="user-current">
-                        <div class="curr">
-                            <div class="cRev">
-                                <h2 class="currRev">Current Reservations</h2>
-                            </div>
-                            
-                            <div class="crBody">
-                                <?php 
-                                $currentBookings = array_filter($bookings, function($booking) {
-                                    return $booking['booking_status'] == 'Confirmed' || $booking['booking_status'] == 'Pending';
-                                });
-                                
-                                if (empty($currentBookings)) {
-                                    echo "<p>No current reservations.</p>";
-                                } else {
-                                    foreach ($currentBookings as $booking) {
-                                ?>
-                                <div class="transaction-card mb-3">
-                                    <div class="tDeets1">
-                                        <div class="tDeets1-1">
-                                            <h3 class="tpetname"><?php echo $booking['pet_name']; ?></h3>
-                                            <p class="tservice"><?php echo $booking['service_name'] . ' - ' . $booking['service_variant']; ?></p>
+            </div>
+
+            <div class="user-transactions">
+                <div class="user-current">
+                    <table class="curr">
+                        <thead class="cRev">
+                            <th class="currRev">CURRENT RESERVATIONS</th>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($current_reservations)): ?>
+                                <tr>
+                                    <td class="crBody">
+                                        <div class="tDeets">
+                                            <p>No current reservations found.</p>
                                         </div>
-                                        <div class="tDeets1-2">
-                                            <p class="price">₱<?php echo number_format($booking['service_rate'], 2); ?></p>
-                                            <span class="tStatus"><?php echo $booking['booking_status']; ?></span>
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($current_reservations as $reservation): ?>
+                                    <tr>
+                                        <td class="crBody">
+                                            <div class="tDeets">
+                                                <h6 class="tStatus"><?php echo $reservation['b_status']; ?></h6>
+
+                                                <div class="tDeets1">
+                                                    <div class="tDeets1-1">
+                                                        <p class="tpetname"><?php echo $reservation['b_pet']; ?></p>
+                                                    </div>
+
+                                                    <div class="tDeets1-2">
+                                                        <p class="price"><?php echo $reservation['b_payment']; ?></p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="tDeets2">
+                                                    <div class="tDeets2-1">
+                                                        <p class="tservice"><?php echo $reservation['b_service']; ?></p>
+                                                        <p class="tId">Transaction ID NO <?php echo $reservation['b_id']; ?></p>
+                                                        <p class="tDate"><?php echo $reservation['b_date']; ?></p>
+                                                    </div>
+
+                                                    <div class="tDeets2-2">
+                                                        <button class="btn" data-bs-target="#req-to-cancel-modal" data-bs-toggle="modal" id="reqtoCancel-but" data-booking-id="<?php echo $reservation['b_id']; ?>">Request to Cancel</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="user-history">
+                    <table class="hist">
+                        <thead class="hRev">
+                            <th class="currRev">RESERVATIONS HISTORY</th>
+                        </thead>
+
+                        <tbody>
+                            <?php if (empty($reservation_history)): ?>
+                                <tr>
+                                    <td class="crBody">
+                                        <div class="tDeets">
+                                            <p>No reservation history found.</p>
                                         </div>
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($reservation_history as $history): ?>
+                                    <tr>
+                                        <td class="crBody">
+                                            <div class="tDeets">
+                                                <h6 class="tStatus"><?php echo $history['b_status']; ?></h6>
+
+                                                <div class="tDeets1">
+                                                    <div class="tDeets1-1">
+                                                        <p class="tpetname"><?php echo $history['b_pet']; ?></p>
+                                                    </div>
+
+                                                    <div class="tDeets1-2">
+                                                        <p class="price"><?php echo $history['b_payment']; ?></p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="tDeets2">
+                                                    <div class="tDeets2-1">
+                                                        <p class="tservice"><?php echo $history['b_service']; ?></p>
+                                                        <p class="tId">Transaction ID NO <?php echo $history['b_id']; ?></p>
+                                                        <p class="tDate"><?php echo $history['b_date']; ?></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>  
+            </div>
+        </div>
+
+        <div class="col-right">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="pbi">PET INFORMATION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php if (empty($pets)): ?>
+                        <tr>
+                            <td class="petDeets">
+                                <p>No pets registered yet.</p>
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($pets as $pet): ?>
+                            <tr>
+                                <td class="petDeets">
+                                    <div class="petImg">
+                                        <img src="<?php echo !empty($pet['image_path']) ? $pet['image_path'] : 'Profile-Pics/pet_icon.png'; ?>" alt="Pet Icon" class="pet-icon">
                                     </div>
-                                    
-                                    <div class="tDeets2">
-                                        <div class="tDeets2-1">
-                                            <p class="tId">Booking ID: <?php echo $booking['booking_id']; ?></p>
-                                            <p class="tDate">
-                                                <?php echo formatDateTime($booking['booking_check_in']); ?> - 
-                                                <?php echo formatDateTime($booking['booking_check_out']); ?>
-                                            </p>
-                                        </div>
-                                        <div class="tDeets2-2">
-                                            <button id="reqtoCancel-but" class="btn" data-bs-toggle="modal" data-bs-target="#req-to-cancel" data-booking-id="<?php echo $booking['booking_id']; ?>">
-                                                Request to Cancel
+                                    <div class="petInfo">
+                                        <p class="petname"><?php echo $pet['pet_name']; ?></p>
+                                        <p class="petdesc"><?php echo $pet['pet_gender']; ?>, <?php echo $pet['pet_breed']; ?>, <?php echo $pet['pet_age']; ?></p>
+                                        <div class="actions">
+                                            <!-- View & Edit Button -->
+                                            <button type="button" class="btn" id="ve" data-bs-toggle="modal" data-bs-target="#veModal" data-pet-id="<?php echo $pet['pet_id']; ?>">
+                                                <p class="view-and-edit">View & Edit</p>
+                                            </button>
+
+                                            <!-- Delete Button -->
+                                            <button type="button" class="btn" id="delbut" data-bs-toggle="modal" data-bs-target="#delModal" data-pet-id="<?php echo $pet['pet_id']; ?>">
+                                                <p class="del">Delete</p>
                                             </button>
                                         </div>
                                     </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <div class="rPet">
+                <button type="button" class="btn" id="regPet" data-bs-toggle="modal" data-bs-target="#regPetModal">
+                    <h6 class="regPet">Need to register new pet?</h6>
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- VIEW AND EDIT MODAL -->
+<div class="modal fade" id="veModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content" id="view-and-edit">
+            <div class="modal-header" id="mheader">
+                <h5 class="modal-title" id="petModalLabel">VIEW & EDIT PET INFORMATION</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="petForm" method="POST" action="update_pet.php" enctype="multipart/form-data">
+                    <input type="hidden" name="pet_id" id="edit_pet_id">
+                                            
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="image-upload-container">
+                                <img id="pet-image-preview" src="Profile-Pics/pet_icon.png" class="img-fluid">
+                                <input type="file" name="pet_image" id="pet_image" class="form-control mt-2">
+                            </div>
+                        </div>
+                                                
+                        <div class="col-md-9">
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">NAME</label>
+                                    <input type="text" class="form-control" name="name" id="edit_pet_name" value="<?php echo $pets['pet_name']; ?>">
                                 </div>
-                                <?php 
-                                    }
-                                }
-                                ?>
+                                <div class="col-md-6">
+                                    <label class="form-label">BREED</label>
+                                    <input type="text" class="form-control" name="breed" id="edit_pet_breed" value="<?php echo $pet['pet_breed']; ?>">
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">PET SIZE</label>
+                                    <input type="text" class="form-control" name="pet_size" id="edit_pet_size" value="<?php echo $pet['pet_size']; ?>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">AGE</label>
+                                    <input type="text" class="form-control" name="age" id="edit_pet_age" value="<?php echo $pet['pet_age']; ?>">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">GENDER</label>
+                                <select class="form-select" name="gender" id="gender-dropdown">
+                                    <option value="Male" <?php echo ($pet['pet_gender'] == 'Male') ? 'selected' : ''; ?>>Male</option>
+                                    <option value="Female" <?php echo ($pet['pet_gender'] == 'Female') ? 'selected' : ''; ?>>Female</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">DESCRIPTION</label>
+                                <textarea class="form-control" name="description" rows="2" id="petDescription" value="<?php echo $pet['pet_description']; ?>"></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">SPECIAL INSTRUCTIONS</label>
+                                <textarea class="form-control" name="special_instructions" rows="2" id="petInstruction" value="<?php echo $pet['pet_special_instructions']; ?>"></textarea>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">VACCINATION STATUS</label>
+                                    <select class="form-select" name="vaccination_status" id="vaccination_status">
+                                        <option value="Vaccinated">Vaccinated</option>
+                                        <option value="Not Vaccinated">Not Vaccinated</option>
+                                    </select>
+                                </div>
+                            
+                                <div class="col-md-4">
+                                    <label class="form-label">DATE ADMINISTERED</label>
+                                    <input type="date" class="form-control" name="date_administered" id="date_administered" value="<?php echo $pet['pet_vaccination_date_administered']; ?>">
+                                </div>
+                            
+                                <div class="col-md-4">
+                                    <label class="form-label">EXPIRY DATE</label>
+                                    <input type="date" class="form-control" name="expiry_date" id="expiry_date" value="<?php echo $pet['pet_vaccination_date_expiry']; ?>"> 
+                                </div>
                             </div>
                         </div>
                     </div>
+                
+                    <div class="text mt-3" id="ccbuttons">
+                        <button type="button" id="cancel-but" data-bs-dismiss="modal">CANCEL</button>
+                        <button type="submit" id="confirm-but">SAVE CHANGES</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="delModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="del-modal">
+            <div class="modal-header d-flex justify-content-center align-items-center" id="mheader">
+                <h1 class="modal-title text-center" id="mod-header">Are you sure?</h1>
+            </div>
+            
+            <div class="modal-body d-flex justify-content-center align-items-center" id="mbody">
+                <h6 class="modal-title text-center" id="mod-body">
+                    <p>Deleting this file will remove all records of your pet from our system permanently.</p>
+                </h6>
+            </div>
+            
+            <form action="delete_pet.php" method="POST">
+                <input type="hidden" name="pet_id" id="delete_pet_id">
+                <div class="modal-footer d-flex justify-content-center align-items-center" id="mfooter">
+                    <button type="submit" class="btn" id="confirm-but">Confirm</button>
+                    <button type="button" class="btn" data-bs-dismiss="modal" id="cancel-but">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- REGISTER NEW PET MODAL -->
+<div class="modal fade" id="regPetModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content" id="reg-pet">
+            <div class="modal-header d-flex justify-content-center align-items-center" id="mheader">
+                <h1 class="modal-title" id="saveModal">PET/s</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body" id="mbody">
+                <div class="pet-modal">
                     
-                    <div class="user-history">
-                        <div class="hist">
-                            <div class="hRev">
-                                <h2 class="hisRev">Reservation History</h2>
-                            </div>
-                            
-                            <div class="rhBody">
-                                <?php 
-                                $historyBookings = array_filter($bookings, function($booking) {
-                                    return $booking['booking_status'] == 'Completed' || $booking['booking_status'] == 'Cancelled';
-                                });
+                    <form class="pet-form" method="post" action="add_pet.php" enctype="multipart/form-data">
+                        <div class="container-fluid p-0">
+                            <div class="row">
                                 
-                                if (empty($historyBookings)) {
-                                    echo "<p>No reservation history.</p>";
-                                } else {
-                                    foreach ($historyBookings as $booking) {
-                                ?>
-                                <div class="transaction-card mb-3">
-                                    <div class="tDeets1">
-                                        <div class="tDeets1-1">
-                                            <h3 class="tpetname"><?php echo $booking['pet_name']; ?></h3>
-                                            <p class="tservice"><?php echo $booking['service_name'] . ' - ' . $booking['service_variant']; ?></p>
-                                        </div>
-                                        <div class="tDeets1-2">
-                                            <p class="price">₱<?php echo number_format($booking['service_rate'], 2); ?></p>
-                                            <span class="tStatus"><?php echo $booking['booking_status']; ?></span>
+                                <!-- Left Column -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">NAME</label>
+                                        <input type="text" name="pet_name" class="form-control" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">PET SIZE</label>
+                                        <div class="radio-group">
+                                            <div>
+                                                <input type="radio" name="pet_size" id="small_dog" value="small_dog">
+                                                <label for="small_dog" id="pet-size">Small Dog</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="pet_size" id="large_dog" value="large_dog">
+                                                <label for="large_dog" id="pet-size">Large Dog</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="pet_size" id="regular_dog" value="regular_dog">
+                                                <label for="regular_dog" id="pet-size">Regular Dog</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="pet_size" id="regular_cat" value="regular_cat">
+                                                <label for="regular_cat" id="pet-size">Regular Cat</label>
+                                            </div>
                                         </div>
                                     </div>
                                     
-                                    <div class="tDeets2">
-                                        <div class="tDeets2-1">
-                                            <p class="tId">Booking ID: <?php echo $booking['booking_id']; ?></p>
-                                            <p class="tDate">
-                                                <?php echo formatDateTime($booking['booking_check_in']); ?> - 
-                                                <?php echo formatDateTime($booking['booking_check_out']); ?>
-                                            </p>
+                                    <div class="mb-3">
+                                        <label class="form-label">BREED</label>
+                                        <input type="text" name="breed" class="form-control" placeholder="Type Breed Here">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">AGE</label>
+                                        <input type="text" name="age" class="form-control" placeholder="Type Age Here">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">GENDER</label>
+                                        <div class="radio-group">
+                                            <div>
+                                                <input type="radio" name="gender" id="male" value="male">
+                                                <label for="male" id="pet-gender">Male</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="gender" id="female" value="female">
+                                                <label for="female" id="pet-gender">Female</label>
+                                            </div>
                                         </div>
                                     </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">DESCRIPTION</label>
+                                        <textarea name="description" class="form-control" placeholder="e.x. White Spots" rows="3" id="petDescription"></textarea>
+                                    </div>
                                 </div>
-                                <?php 
-                                    }
-                                }
-                                ?>
+                                
+                                <!-- Right Column -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">PET PROFILE PHOTO</label>
+                                        <input type="file" name="pet_photo" class="form-control" accept="image/*,application/pdf">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">VACCINATION STATUS</label>
+                                        <input type="file" name="vaccination_file" class="form-control mb-2" accept="image/*,application/pdf">
+                                        
+                                        <div class="radio-group">
+                                            <div>
+                                                <input type="radio" name="vaccination_status" id="vaccinated" value="vaccinated">
+                                                <label for="vaccinated">Vaccinated</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="vaccination_status" id="not_vaccinated" value="not_vaccinated">
+                                                <label for="not_vaccinated">Not Vaccinated</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">DATE ADMINISTERED</label>
+                                        <input type="date" name="date_administered" class="form-control">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">EXPIRY DATE</label>
+                                        <input type="date" name="expiry_date" class="form-control">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">SPECIAL INSTRUCTIONS</label>
+                                        <textarea name="special_instructions" class="form-control" placeholder="e.x. Medications" rows="3" id="petInstruction"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-12 text-center">
+                                    <button type="submit" class="btn" id="confirm-but">Save and Go Back</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- REQUEST TO CANCEL MODAL -->
+<div class="modal fade" id="req-to-cancel-modal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="req-to-cancel">
+            
+            <form action="cancel_booking.php" method="POST">
+                <input type="hidden" name="booking_id" id="cancel  method="POST">
+                <input type="hidden" name="booking_id" id="cancel_booking_id">
+                
+                <div class="modal-header" id="mheader">
+                    <h1 class="modal-title fs-5" id="req-to-cancel-title">Are you sure you want to cancel?</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body" id="mbody-req-to-cancel">
+                    <div class="mbody-text">
+                        <p id="req-to-cancel-mbody-text">
+                            We're sorry to see you go! Please confirm if you'd like to cancel your booking.
+                            If you need assistance, feel free to reach out to us.
+                        </p>
+                        
+                        <div class="d-flex flex-wrap gap-3">
+                            <div>
+                                <input type="radio" name="reason" value="Change of Plans" id="ChangeOfPlans" required>
+                                <label for="ChangeOfPlans">Change of Plans</label>
+                            </div>
+
+                            <div>
+                                <input type="radio" name="reason" value="Personal Emergency" id="PersonalEmergency">
+                                <label for="PersonalEmergency">Personal Emergency</label>
+                            </div>
+
+                            <div>
+                                <input type="radio" name="reason" value="Scheduling Conflict" id="SchedulingConflict">
+                                <label for="SchedulingConflict">Scheduling Conflict</label>
+                            </div>
+
+                            <div>
+                                <input type="radio" name="reason" value="Dissatisfaction with Services" id="DissatisfactionWithServices">
+                                <label for="DissatisfactionWithServices">Dissatisfaction with Services</label>
+                            </div>
+
+                            <div class="d-flex align-items-center">
+                                <input type="radio" name="reason" value="Other" id="Others">
+                                <label for="Others" class="me-2">Other Specify:</label>
+                                <textarea class="form-control" id="message-text" name="other_reason"></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                <div class="modal-footer d-flex justify-content-center align-items-center" id="mfooter">
+                    <button class="btn" id="confirm-but" data-bs-target="#process-cancellation" data-bs-toggle="modal" type="button">
+                        Proceed to Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="process-cancellation" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" id="process-cancel">
+            <div class="modal-header" id="mheader">
+                <h1 class="modal-title fs-5" id="process-cancellation-title">Your Cancellation is Being Processed</h1>
+            </div>
+
+            <div class="modal-body" id="mbody-process-cancellation">
+                We're processing your refund now. Kindly wait a moment, and we'll notify you once it's complete.
+                Thank you for your patience!
             </div>
             
-            <div class="col-right">
-                <div class="pbi">
-                    <h2>Pet Information</h2>
-                </div>
-                
-                <div class="rPet">
-                    <p class="regPet" id="regPet" data-bs-toggle="modal" data-bs-target="#reg-pet">Register Pet</p>
-                </div>
-                
-                <?php foreach ($pets as $pet): ?>
-                <div class="petDeets">
-                    <div class="petImg">
-                        <img src="<?php echo getPetPicture($pet['pet_picture']); ?>" alt="Pet Picture" class="pet-icon">
-                    </div>
-                    
-                    <div class="petInfo">
-                        <h3 class="petname"><?php echo $pet['pet_name']; ?></h3>
-                        <p class="petdesc"><?php echo $pet['pet_breed']; ?>, <?php echo $pet['pet_age']; ?> years old</p>
-                        <div class="actions">
-                            <p id="ve" class="view-and-edit" data-bs-toggle="modal" data-bs-target="#view-and-edit" data-pet-id="<?php echo $pet['pet_id']; ?>">View and Edit Pet Information</p>
-                            <p id="delbut" class="del" data-bs-toggle="modal" data-bs-target="#del-modal" data-pet-id="<?php echo $pet['pet_id']; ?>">Delete Pet Information</p>
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
+            <div class="modal-footer d-flex justify-content-center align-items-center" id="mfooter">
+                <button type="button" class="btn" data-bs-dismiss="modal" id="confirm-but">Confirm</button>
+                <button type="button" class="btn" data-bs-dismiss="modal" id="cancel-but">Cancel</button>
             </div>
-        </section>
+        </div>
     </div>
-    
-    <!-- Edit Profile Modal -->
-    <div class="modal fade" id="editProfile" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header" id="mheader">
-                    <h1 class="modal-title" id="editProfileModalLabel">Edit Profile</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<!-- EDIT USER INFORMATION -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" id="editProfile">
+            <div class="modal-header border-0 pb-0" id="mheader">
+                <div class="paw-prints">
+                    <img src="Profile-Pics.png" alt="">
                 </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
                 
-                <form method="POST" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="firstName" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="firstName" name="firstName" value="<?php echo $customer['c_first_name']; ?>" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="lastName" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="lastName" name="lastName" value="<?php echo $customer['c_last_name']; ?>" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" value="<?php echo $customer['c_email']; ?>" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="contactNumber" class="form-label">Contact Number</label>
-                                <input type="tel" class="form-control" id="contactNumber" name="contactNumber" value="<?php echo $customer['c_contact_number']; ?>" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="modeOfCommunication" class="form-label">Mode of Communication</label>
-                                <select class="form-control" id="modeOfCommunication" name="modeOfCommunication" required>
-                                    <option value="Email" <?php echo $customer['c_mode_of_communication'] == 'Email' ? 'selected' : ''; ?>>Email</option>
-                                    <option value="Phone" <?php echo $customer['c_mode_of_communication'] == 'Phone' ? 'selected' : ''; ?>>Phone</option>
-                                    <option value="SMS" <?php echo $customer['c_mode_of_communication'] == 'SMS' ? 'selected' : ''; ?>>SMS</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="profilePicture" class="form-label">Profile Picture</label>
-                                <input type="file" class="form-control" id="profilePicture" name="profilePicture" accept="image/*">
-                                <?php if ($customer['c_profile_picture']): ?>
-                                <div class="mt-2">
-                                    <img src="<?php echo getProfilePicture($customer['c_profile_picture']); ?>" alt="Current Profile Picture" style="max-width: 100px; max-height: 100px;">
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+            <div class="modal-body" id="mbody">
+                <div class="text-center mb-4">
+                    <h5 class="modal-title" id="editProfileModalLabel">EDIT PROFILE</h5>
+                </div>
+
+                <form action="update_profile.php" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3 text-center">
+                        <img src="<?php echo $profile_picture; ?>" alt="Profile Picture" class="profile-icon mb-2" style="width: 100px; height: 100px; border-radius: 50%;">
+                        <input type="file" name="profile_picture" class="form-control" accept="image/*">
                     </div>
                     
-                    <div class="modal-footer" id="mfooter">
-                        <div class="form-actions">
-                            <button type="button" class="btn" id="cancel-but" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn" id="confirm-but" name="update_profile">Save Changes</button>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">FIRST NAME</label>
+                            <input type="text" class="form-control" name="first_name" value="<?php echo $fetch_cust_info['c_first_name']; ?>" required>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">LAST NAME</label>
+                            <input type="text" class="form-control" name="last_name" value="<?php echo $fetch_cust_info['c_last_name']; ?>" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">CONTACT NO.</label>
+                            <input type="tel" class="form-control" name="contact" value="<?php echo $fetch_cust_info['c_contact_number']; ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">EMAIL</label>
+                            <input type="email" class="form-control" name="email" value="<?php echo $fetch_cust_info['c_email']; ?>" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">ADDRESS</label>
+                        <input type="text" class="form-control" name="address" value="<?php echo isset($fetch_cust_info['c_address']) ? htmlspecialchars($fetch_cust_info['c_address']) : ''; ?>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">SOCIALS</label>
+                        <input type="url" class="form-control" name="socials" value="<?php echo isset($fetch_cust_info['c_mode_of_communication']) ? htmlspecialchars($fetch_cust_info['c_mode_of_communication']) : ''; ?>">
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">CURRENT PASSWORD</label>
+                            <input type="password" class="form-control" name="current_password">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">NEW PASSWORD</label>
+                            <input type="password" class="form-control" name="new_password">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer d-flex justify-content-center align-items-center" id="mfooter">
+                        <button type="button" class="btn" data-bs-dismiss="modal" id="cancel-but">Cancel</button>
+                        <button type="submit" class="btn" id="confirm-but">Save Changes</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    
-    <!-- Request to Cancel Modal -->
-    <div class="modal fade" id="req-to-cancel" tabindex="-1" aria-labelledby="req-to-cancel-title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header" id="mheader">
-                    <h1 class="modal-title" id="req-to-cancel-title">Request to Cancel</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <form method="POST">
-                    <div class="modal-body" id="mbody-req-to-cancel">
-                        <input type="hidden" id="booking_id" name="booking_id">
-                        <p>Please select a reason for cancellation:</p>
-                        
-                        <div class="radio-group">
-                            <input type="radio" id="reason1" name="cancellation_reason" value="Change of plans" required>
-                            <label for="reason1">Change of plans</label>
-                        </div>
-                        
-                        <div class="radio-group">
-                            <input type="radio" id="reason2" name="cancellation_reason" value="Found another service">
-                            <label for="reason2">Found another service</label>
-                        </div>
-                        
-                        <div class="radio-group">
-                            <input type="radio" id="reason3" name="cancellation_reason" value="Pet is not available">
-                            <label for="reason3">Pet is not available</label>
-                        </div>
-                        
-                        <div class="radio-group reason4">
-                            <input type="radio" id="reason4" name="cancellation_reason" value="Other">
-                            <label for="reason4">Other:</label>
-                            <textarea id="otherReason" name="other_reason" placeholder="Please specify"></textarea>
-                        </div>
-                    </div>
+</div>
+
+<!-- JavaScript for handling modal data -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle View & Edit Pet Modal
+    const veModal = document.getElementById('veModal');
+    if (veModal) {
+        veModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const petId = button.getAttribute('data-pet-id');
+            document.getElementById('edit_pet_id').value = petId;
+            
+            // Fetch pet data via AJAX
+            fetch(`get_pet_data.php?pet_id=${petId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('edit_pet_name').value = data.name;
+                    document.getElementById('edit_pet_breed').value = data.breed;
+                    document.getElementById('edit_pet_size').value = data.pet_size;
+                    document.getElementById('edit_pet_age').value = data.age;
+                    document.getElementById('gender-dropdown').value = data.gender;
+                    document.getElementById('petDescription').value = data.description;
+                    document.getElementById('petInstruction').value = data.special_instructions;
+                    document.getElementById('vaccination_status').value = data.vaccination_status;
+                    document.getElementById('date_administered').value = data.date_administered;
+                    document.getElementById('expiry_date').value = data.expiry_date;
                     
-                    <div class="modal-footer" id="mfooter">
-                        <div id="ccbuttons">
-                            <button type="button" class="btn" id="cancel-but" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn" id="confirm-but" name="cancel_booking" data-bs-toggle="modal" data-bs-target="#process-cancel">Confirm</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Process Cancellation Modal -->
-    <div class="modal fade" id="process-cancel" tabindex="-1" aria-labelledby="process-cancellation-title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header" id="mheader">
-                    <h1 class="modal-title" id="process-cancellation-title">Cancellation Request</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <div class="modal-body" id="mbody-process-cancellation">
-                    <p>Your cancellation request has been submitted.</p>
-                    <p>We will process your request shortly.</p>
-                </div>
-                
-                <div class="modal-footer" id="mfooter">
-                    <div id="ccbuttons">
-                        <button type="button" class="btn" id="confirm-but" data-bs-dismiss="modal">OK</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- View and Edit Pet Modal -->
-    <div class="modal fade" id="view-and-edit" tabindex="-1" aria-labelledby="petModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header" id="mheader">
-                    <h1 class="modal-title" id="petModalLabel">Pet Information</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <form method="POST" enctype="multipart/form-data" id="edit-pet-form">
-                    <div class="modal-body">
-                        <input type="hidden" id="edit_pet_id" name="pet_id">
-                        <input type="hidden" id="current_pet_picture" name="current_pet_picture">
-                        <input type="hidden" id="current_vaccination_card" name="current_vaccination_card">
-                        
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="petName" class="form-label">Pet Name</label>
-                                <input type="text" class="form-control" id="petName" name="petName" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petSize" class="form-label">Pet Size</label>
-                                <select class="form-control" id="petSize" name="petSize" required>
-                                    <option value="Cat">Cat</option>
-                                    <option value="Small">Small Dog</option>
-                                    <option value="Medium">Medium Dog</option>
-                                    <option value="Large">Large Dog</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petBreed" class="form-label">Pet Breed</label>
-                                <input type="text" class="form-control" id="petBreed" name="petBreed" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petAge" class="form-label">Pet Age</label>
-                                <input type="number" class="form-control" id="petAge" name="petAge" min="0" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petGender" class="form-label">Pet Gender</label>
-                                <select class="form-control" id="petGender" name="petGender" required>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petPicture" class="form-label">Pet Picture</label>
-                                <input type="file" class="form-control" id="petPicture" name="petPicture" accept="image/*">
-                                <div class="mt-2">
-                                    <img id="pet-image-preview" src="/placeholder.svg" alt="Pet Picture" style="max-width: 100px; max-height: 100px;">
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petDescription" class="form-label">Pet Description</label>
-                                <textarea class="form-control" id="petDescription" name="petDescription" rows="3"></textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petVaccinationDate" class="form-label">Vaccination Date</label>
-                                <input type="date" class="form-control" id="petVaccinationDate" name="petVaccinationDate">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petVaccinationExpiry" class="form-label">Vaccination Expiry</label>
-                                <input type="date" class="form-control" id="petVaccinationExpiry" name="petVaccinationExpiry">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petVaccinationCard" class="form-label">Vaccination Card</label>
-                                <input type="file" class="form-control" id="petVaccinationCard" name="petVaccinationCard" accept="image/*">
-                                <div class="mt-2">
-                                    <img id="vaccination-card-preview" src="/placeholder.svg" alt="Vaccination Card" style="max-width: 100px; max-height: 100px; display: none;">
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petVaccinationStatus" class="form-label">Vaccination Status</label>
-                                <select class="form-control" id="petVaccinationStatus" name="petVaccinationStatus" required>
-                                    <option value="Up to date">Up to date</option>
-                                    <option value="Expired">Expired</option>
-                                    <option value="Not vaccinated">Not vaccinated</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="petSpecialInstruction" class="form-label">Special Instructions</label>
-                                <textarea class="form-control" id="petSpecialInstruction" name="petSpecialInstruction" rows="3"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer" id="mfooter">
-                        <div class="form-actions">
-                            <button type="button" class="btn" id="cancel-but" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn" id="confirm-but" name="update_pet">Save Changes</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Delete Pet Modal -->
-    <div class="modal fade" id="del-modal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header" id="mheader">
-                    <h1 class="modal-title" id="deleteModalLabel">Delete Pet</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <form method="POST">
-                    <div class="modal-body">
-                        <input type="hidden" id="delete_pet_id" name="pet_id">
-                        <p>Are you sure you want to delete this pet's information?</p>
-                        <p>This action cannot be undone.</p>
-                    </div>
-                    
-                    <div class="modal-footer" id="mfooter">
-                        <div id="ccbuttons">
-                            <button type="button" class="btn" id="cancel-but" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn" id="confirm-but" name="delete_pet">Delete</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Register Pet Modal -->
-    <div class="modal fade" id="reg-pet" tabindex="-1" aria-labelledby="registerPetModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header" id="mheader">
-                    <h1 class="modal-title" id="registerPetModalLabel">Register Pet</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <form method="POST" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="regPetName" class="form-label">Pet Name</label>
-                                <input type="text" class="form-control" id="regPetName" name="petName" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetSize" class="form-label">Pet Size</label>
-                                <select class="form-control" id="regPetSize" name="petSize" required>
-                                    <option value="Cat">Cat</option>
-                                    <option value="Small">Small Dog</option>
-                                    <option value="Medium">Medium Dog</option>
-                                    <option value="Large">Large Dog</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetBreed" class="form-label">Pet Breed</label>
-                                <input type="text" class="form-control" id="regPetBreed" name="petBreed" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetAge" class="form-label">Pet Age</label>
-                                <input type="number" class="form-control" id="regPetAge" name="petAge" min="0" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetGender" class="form-label">Pet Gender</label>
-                                <select class="form-control" id="regPetGender" name="petGender" required>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetPicture" class="form-label">Pet Picture</label>
-                                <input type="file" class="form-control" id="regPetPicture" name="petPicture" accept="image/*">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetDescription" class="form-label">Pet Description</label>
-                                <textarea class="form-control" id="regPetDescription" name="petDescription" rows="3"></textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetVaccinationDate" class="form-label">Vaccination Date</label>
-                                <input type="date" class="form-control" id="regPetVaccinationDate" name="petVaccinationDate">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetVaccinationExpiry" class="form-label">Vaccination Expiry</label>
-                                <input type="date" class="form-control" id="regPetVaccinationExpiry" name="petVaccinationExpiry">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetVaccinationCard" class="form-label">Vaccination Card</label>
-                                <input type="file" class="form-control" id="regPetVaccinationCard" name="petVaccinationCard" accept="image/*">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetVaccinationStatus" class="form-label">Vaccination Status</label>
-                                <select class="form-control" id="regPetVaccinationStatus" name="petVaccinationStatus" required>
-                                    <option value="Up to date">Up to date</option>
-                                    <option value="Expired">Expired</option>
-                                    <option value="Not vaccinated">Not vaccinated</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regPetSpecialInstruction" class="form-label">Special Instructions</label>
-                                <textarea class="form-control" id="regPetSpecialInstruction" name="petSpecialInstruction" rows="3"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer" id="mfooter">
-                        <div class="form-actions">
-                            <button type="button" class="btn" id="cancel-but" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn" id="confirm-but" name="register_pet">Register</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Handle Request to Cancel modal
-        document.querySelectorAll('#reqtoCancel-but').forEach(button => {
-            button.addEventListener('click', function() {
-                const bookingId = this.getAttribute('data-booking-id');
-                document.getElementById('booking_id').value = bookingId;
-            });
+                    if (data.image_path) {
+                        document.getElementById('pet-image-preview').src = data.image_path;
+                    }
+                })
+                .catch(error => console.error('Error fetching pet data:', error));
         });
-        
-        // Handle View and Edit Pet modal
-        document.querySelectorAll('.view-and-edit').forEach(link => {
-            link.addEventListener('click', function() {
-                const petId = this.getAttribute('data-pet-id');
-                
-                // Fetch pet data using AJAX
-                fetch(`get_pet_data.php?pet_id=${petId}`)
-                    .then(response => response.json())
-                    .then(pet => {
-                        document.getElementById('edit_pet_id').value = pet.pet_id;
-                        document.getElementById('petName').value = pet.pet_name;
-                        document.getElementById('petSize').value = pet.pet_size;
-                        document.getElementById('petBreed').value = pet.pet_breed;
-                        document.getElementById('petAge').value = pet.pet_age;
-                        document.getElementById('petGender').value = pet.pet_gender;
-                        document.getElementById('petDescription').value = pet.pet_description;
-                        document.getElementById('petVaccinationDate').value = pet.pet_vaccination_date_administered;
-                        document.getElementById('petVaccinationExpiry').value = pet.pet_vaccination_date_expiry;
-                        document.getElementById('petVaccinationStatus').value = pet.pet_vaccination_status;
-                        document.getElementById('petSpecialInstruction').value = pet.pet_special_instruction;
-                        
-                        // Set hidden fields for current images
-                        document.getElementById('current_pet_picture').value = pet.pet_picture;
-                        document.getElementById('current_vaccination_card').value = pet.pet_vaccination_card;
-                        
-                        // Show current images
-                        const petImagePreview = document.getElementById('pet-image-preview');
-                        if (pet.pet_picture) {
-                            petImagePreview.src = `uploads/pets/${pet.pet_picture}`;
-                            petImagePreview.style.display = 'block';
-                        } else {
-                            petImagePreview.src = 'assets/default-pet.jpg';
-                            petImagePreview.style.display = 'block';
-                        }
-                        
-                        const vaccinationCardPreview = document.getElementById('vaccination-card-preview');
-                        if (pet.pet_vaccination_card) {
-                            vaccinationCardPreview.src = `uploads/vaccination/${pet.pet_vaccination_card}`;
-                            vaccinationCardPreview.style.display = 'block';
-                        } else {
-                            vaccinationCardPreview.style.display = 'none';
-                        }
-                    })
-                    .catch(error => console.error('Error fetching pet data:', error));
-            });
+    }
+    
+    // Handle Delete Pet Modal
+    const delModal = document.getElementById('delModal');
+    if (delModal) {
+        delModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const petId = button.getAttribute('data-pet-id');
+            document.getElementById('delete_pet_id').value = petId;
         });
-        
-        // Handle Delete Pet modal
-        document.querySelectorAll('.del').forEach(link => {
-            link.addEventListener('click', function() {
-                const petId = this.getAttribute('data-pet-id');
-                document.getElementById('delete_pet_id').value = petId;
-            });
+    }
+    
+    // Handle Cancel Booking Modal
+    const cancelModal = document.getElementById('req-to-cancel-modal');
+    if (cancelModal) {
+        cancelModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const bookingId = button.getAttribute('data-booking-id');
+            document.getElementById('cancel_booking_id').value = bookingId;
         });
-        
-        // Preview uploaded images
-        document.getElementById('petPicture').addEventListener('change', function(event) {
-            const file = event.target.files[0];
+    }
+    
+    // Preview uploaded images
+    const petImageInput = document.getElementById('pet_image');
+    if (petImageInput) {
+        petImageInput.addEventListener('change', function() {
+            const file = this.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('pet-image-preview').src = e.target.result;
-                    document.getElementById('pet-image-preview').style.display = 'block';
                 };
                 reader.readAsDataURL(file);
             }
         });
-        
-        document.getElementById('petVaccinationCard').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('vaccination-card-preview').src = e.target.result;
-                    document.getElementById('vaccination-card-preview').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    </script>
+    }
+});
+</script>
+
 </body>
 </html>
