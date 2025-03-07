@@ -913,3 +913,6 @@ text-transform: uppercase;
   cursor: not-allowed;
 }
 
+.pet-size, .calendar, .checkin-out, .book {
+  display: none; /* Ensures they are hidden initially */
+}
