@@ -1,45 +1,164 @@
 <?php
-require_once 'connect.php'; // Include database connection
+session_start();
 
-try {
-    // Fetch pet details from the database
-    $stmt = $conn->prepare("SELECT pet_id, pet_name, pet_breed, pet_age, pet_gender, pet_size FROM Pet");
-    $stmt->execute();
-    $pets = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Database error: " . $e->getMessage());
+
+$petSelected = false;
+$dateSelected = false;
+$timeSelected = false;
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['pet_type'])) {
+        $_SESSION['pet_type'] = $_POST['pet_type'];
+        $petSelected = true;
+        echo json_encode(['success' => true, 'message' => 'Pet type saved']);
+        exit;
+    }
+   
+    if (isset($_POST['selected_date'])) {
+        $_SESSION['selected_date'] = $_POST['selected_date'];
+        $dateSelected = true;
+        echo json_encode(['success' => true, 'message' => 'Date saved']);
+        exit;
+    }
+   
+    if (isset($_POST['check_in_time'])) {
+        $_SESSION['check_in_time'] = $_POST['check_in_time'];
+        $timeSelected = true;
+        echo json_encode(['success' => true, 'message' => 'Check-in time saved']);
+        exit;
+    }
+   
+    if (isset($_POST['check_out_time'])) {
+        $_SESSION['check_out_time'] = $_POST['check_out_time'];
+        $timeSelected = true;
+        echo json_encode(['success' => true, 'message' => 'Check-out time saved']);
+        exit;
+    }
+}
+
+
+if (isset($_SESSION['pet_type'])) $petSelected = true;
+if (isset($_SESSION['selected_date'])) $dateSelected = true;
+if (isset($_SESSION['check_in_time']) && isset($_SESSION['check_out_time'])) $timeSelected = true;
+
+
+function generateCalendar($month, $year) {
+    $firstDayOfMonth = mktime(0, 0, 0, $month, 1, $year);
+    $numberDays = date('t', $firstDayOfMonth);
+    $dateComponents = getdate($firstDayOfMonth);
+    $monthName = $dateComponents['month'];
+    $dayOfWeek = $dateComponents['wday'];
+    $dateToday = date('Y-m-d');
+
+
+    $calendar = "<table class='calendar'>";
+    $calendar .= "<caption>$monthName $year</caption>";
+    $calendar .= "<tr>";
+
+
+    $weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    foreach($weekdays as $day) {
+        $calendar .= "<th class='header'>$day</th>";
+    }
+
+
+    $calendar .= "</tr><tr>";
+
+
+    if ($dayOfWeek > 0) {
+        $calendar .= "<td colspan='$dayOfWeek'>&nbsp;</td>";
+    }
+
+
+    $currentDay = 1;
+
+
+    while ($currentDay <= $numberDays) {
+        if ($dayOfWeek == 7) {
+            $dayOfWeek = 0;
+            $calendar .= "</tr><tr>";
+        }
+       
+        $currentDayRel = str_pad($currentDay, 2, "0", STR_PAD_LEFT);
+        $date = "$year-$month-$currentDayRel";
+       
+        $today = $date == $dateToday ? "today" : "";
+        $past = strtotime($date) < strtotime($dateToday) ? "past" : "";
+       
+        $calendar .= "<td class='day $today $past' data-date='$date'>";
+        $calendar .= $currentDay;
+        $calendar .= "</td>";
+       
+        $currentDay++;
+        $dayOfWeek++;
+    }
+
+
+    if ($dayOfWeek != 7) {
+        $remainingDays = 7 - $dayOfWeek;
+        $calendar .= "<td colspan='$remainingDays'>&nbsp;</td>";
+    }
+
+
+    $calendar .= "</tr>";
+    $calendar .= "</table>";
+
+
+    return $calendar;
+}
+
+
+function outputBookingCalendar() {
+    $month = date('m');
+    $year = date('Y');
+    echo generateCalendar($month, $year);
 }
 ?>
 
+
+
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
+
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adorafu Happy Stay/Book/Pet Hotel</title>
 
+
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
 
+
     <!-- Your custom CSS -->
-    <link rel="stylesheet" href="book-pet-hotel.css">
+    <link rel="stylesheet" href="book-pet-hotels.css">
+
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
 
     <!-- jQuery and Bootstrap Bundle (includes Popper) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 
+
     <!-- Your custom JavaScript -->
-    <script src="booking.js" defer></script>
+    <script src="new-booking-pet-hotel.js" defer></script>
+
+
 
 
 </head>
 
+
 <body>
 
+
     <?php include 'header.php'; ?>
+
 
     <div class="main">
         <div class="main-container">
@@ -70,6 +189,7 @@ try {
                     </div>
                 </div>
 
+
                 <!-- Booking Section -->
                 <div class="main-schedule-options">
                     <div class="schedule-options">
@@ -83,6 +203,7 @@ try {
                                 <button class="dropdown-item pet-type" id="dd-item-dog" type="button">Dog</button>
                                 <button class="dropdown-item pet-type" id="dd-item-cat" type="button">Cat</button>
 
+
                             </div>
                         </div>
                     </div>
@@ -95,12 +216,14 @@ try {
                                     ₱ 700</h6>
                             </div>
 
+
                             <div class="pet-info dog-info">
                                 <img src="Booking/reg_dog.png" alt="Regular Dog" class="reg-dog" data-selected-src="Booking/reg_dog(selected).png">
                                 <h3>Regular Dog</h3>
                                 <h6>Weight: 26 - 40 lbs<br>
                                     ₱ 800</h6>
                             </div>
+
 
                             <div class="pet-info dog-info">
                                 <img src="Booking/large_dog.png" alt="Large Dog" class="large-dog" data-selected-src="Booking/large_dog(selected).png">
@@ -109,6 +232,7 @@ try {
                                     ₱ 900</h6>
                             </div>
                         </div>
+
 
                         <div class="pet-information-cat">
                             <div class="pet-info cat-info">
@@ -142,6 +266,8 @@ try {
                         </div>
 
 
+
+
                         <div class="check-in" id="check">
                             <h3>Check Out: </h3>
                             <div class="selection-dropdown-check" id="align-1">
@@ -163,7 +289,9 @@ try {
                             </div>
                         </div>
 
+
                         <div class="book">BOOK</div>
+
 
                     </div>
                 </div>
@@ -176,101 +304,55 @@ try {
                         <div class="pet-1">
                             <div class="pets"><b>Pet/s</b></div>
 
+
                             <table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Breed</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>Size</th>
-            <th>Price</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="petTableBody">
-        <tr>
-            <!-- Dropdown inside the Name column -->
-            <td data-label="Name">
-                <select class="petSelect" onchange="updatePetDetails(this)">
-                    <option value="">Choose Pet</option>
-                    <?php foreach ($pets as $pet): ?>
-                        <option value="<?= htmlspecialchars(json_encode([
-                            'pet_breed' => $pet['pet_breed'],
-                            'pet_age' => $pet['pet_age'],
-                            'pet_gender' => $pet['pet_gender'],
-                            'pet_size' => $pet['pet_size'],
-                            'pet_price' => isset($pet['pet_price']) ? $pet['pet_price'] : '₱0.00'
-                        ]), ENT_QUOTES, 'UTF-8') ?>">
-                            <?= htmlspecialchars($pet['pet_name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </td>
-            <td data-label="Breed"></td>
-            <td data-label="Age"></td>
-            <td data-label="Gender"></td>
-            <td data-label="Size"></td>
-            <td data-label="Price">₱0.00</td>
-            <td><button type="button" onclick="addPetRow()">+</button></td>
-        </tr>
-    </tbody>
-</table>
+                                <thead>
+                                    <tr>
 
-<script>
-    function updatePetDetails(selectElement) {
-        let selectedPet = selectElement.value ? JSON.parse(selectElement.value) : null;
-        let row = selectElement.closest("tr");
 
-        row.querySelector("[data-label='Breed']").textContent = selectedPet ? selectedPet.pet_breed : "";
-        row.querySelector("[data-label='Age']").textContent = selectedPet ? selectedPet.pet_age + " years" : "";
-        row.querySelector("[data-label='Gender']").textContent = selectedPet ? selectedPet.pet_gender : "";
-        row.querySelector("[data-label='Size']").textContent = selectedPet ? selectedPet.pet_size : "";
-        row.querySelector("[data-label='Price']").textContent = selectedPet ? selectedPet.pet_price : "₱0.00";
-    }
+                                        <th>NAME</th>
+                                        <th>BREED</th>
+                                        <th>AGE</th>
+                                        <th>GENDER</th>
+                                        <th>SIZE</th>
+                                        <th>PRICE</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    // Sample pet data array
+                                    $pets = [
+                                        ['name' => 'Max', 'breed' => 'Golden Retriever', 'age' => '4 years', 'gender' => 'Male', 'size' => 'Large', 'price' => '₱3500.00'],
+                                        ['name' => 'Luna', 'breed' => 'Poodle', 'age' => '1.5 years', 'gender' => 'Female', 'size' => 'Medium', 'price' => '₱2500.00'],
+                                        ['name' => 'Buddy', 'breed' => 'Labrador', 'age' => '3 years', 'gender' => 'Male', 'size' => 'Large', 'price' => '₱3000.00'],
+                                        ['name' => 'Daisy', 'breed' => 'Beagle', 'age' => '2 years', 'gender' => 'Female', 'size' => 'Small', 'price' => '₱2000.00'],
+                                        ['name' => 'Rocky', 'breed' => 'Bulldog', 'age' => '5 years', 'gender' => 'Male', 'size' => 'Medium', 'price' => '₱4000.00'],
+                                    ];
 
-    function addPetRow() {
-        let tableBody = document.getElementById("petTableBody");
-        let newRow = document.createElement("tr");
 
-        newRow.innerHTML = `
-            <td data-label="Name">
-                <select class="petSelect" onchange="updatePetDetails(this)">
-                    <option value="">Choose Pet</option>
-                    <?php foreach ($pets as $pet): ?>
-                        <option value="<?= htmlspecialchars(json_encode([
-                            'pet_breed' => $pet['pet_breed'],
-                            'pet_age' => $pet['pet_age'],
-                            'pet_gender' => $pet['pet_gender'],
-                            'pet_size' => $pet['pet_size'],
-                            'pet_price' => isset($pet['pet_price']) ? $pet['pet_price'] : '₱0.00'
-                        ]), ENT_QUOTES, 'UTF-8') ?>">
-                            <?= htmlspecialchars($pet['pet_name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </td>
-            <td data-label="Breed"></td>
-            <td data-label="Age"></td>
-            <td data-label="Gender"></td>
-            <td data-label="Size"></td>
-            <td data-label="Price">₱0.00</td>
-            <td><button type="button" onclick="removePetRow(this)">-</button></td>
-        `;
+                                    // Generate table rows
+                                    foreach ($pets as $pet) {
+                                        echo "<tr>";
 
-        tableBody.appendChild(newRow);
-    }
 
-    function removePetRow(button) {
-        let row = button.closest("tr");
-        row.remove();
-    }
-</script>
+                                        echo "<td data-label='Name'>{$pet['name']}</td>";
+                                        echo "<td data-label='Breed'>{$pet['breed']}</td>";
+                                        echo "<td data-label='Age'>{$pet['age']}</td>";
+                                        echo "<td data-label='Gender'>{$pet['gender']}</td>";
+                                        echo "<td data-label='Size'>{$pet['size']}</td>";
+                                        echo "<td data-label='Price'>{$pet['price']}</td>";
+                                        echo "</tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+
 
                             <div class="lower-section">
                                 <button type="button" class="btn" id="regPet" data-bs-toggle="modal" data-bs-target="#petRegistrationModal">
                                     <h6 class="regnewpet" style="font-weight: 600;">Need to register new pet?</h6>
                                 </button>
+
 
                                 <div class="modal fade" id="petRegistrationModal" data-backdrop="static" data-keyboard="false" tabindex="-1">
                                     <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -290,6 +372,7 @@ try {
                                                                         <label for="petName" class="form-label">Pet Name</label>
                                                                         <input type="text" id="petName" name="pet_name" class="form-control" required>
                                                                     </div>
+
 
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Pet Size</label>
@@ -313,15 +396,18 @@ try {
                                                                         </div>
                                                                     </div>
 
+
                                                                     <div class="mb-3">
                                                                         <label for="petBreed" class="form-label">Breed</label>
                                                                         <input type="text" id="petBreed" name="breed" class="form-control" placeholder="Type Breed Here">
                                                                     </div>
 
+
                                                                     <div class="mb-3">
                                                                         <label for="petAge" class="form-label">Age</label>
                                                                         <input type="text" id="petAge" name="age" class="form-control" placeholder="Type Age Here">
                                                                     </div>
+
 
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Gender</label>
@@ -337,11 +423,13 @@ try {
                                                                         </div>
                                                                     </div>
 
+
                                                                     <div class="mb-3">
                                                                         <label for="petDescription" class="form-label">Description</label>
                                                                         <textarea id="petDescription" name="description" class="form-control" placeholder="e.g., White Spots" rows="3"></textarea>
                                                                     </div>
                                                                 </div>
+
 
                                                                 <!-- Right Column -->
                                                                 <div class="col-md-6">
@@ -349,6 +437,7 @@ try {
                                                                         <label for="petProfilePhoto" class="form-label">Pet Profile Photo</label>
                                                                         <input type="file" id="petProfilePhoto" name="pet_photo" class="form-control" accept="image/*,application/pdf">
                                                                     </div>
+
 
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Vaccination Status</label>
@@ -365,15 +454,18 @@ try {
                                                                         </div>
                                                                     </div>
 
+
                                                                     <div class="mb-3">
                                                                         <label for="dateAdministered" class="form-label">Date Administered</label>
                                                                         <input type="date" id="dateAdministered" name="date_administered" class="form-control">
                                                                     </div>
 
+
                                                                     <div class="mb-3">
                                                                         <label for="expiryDate" class="form-label">Expiry Date</label>
                                                                         <input type="date" id="expiryDate" name="expiry_date" class="form-control">
                                                                     </div>
+
 
                                                                     <div class="mb-3">
                                                                         <label for="specialInstructions" class="form-label">Special Instructions</label>
@@ -381,6 +473,7 @@ try {
                                                                     </div>
                                                                 </div>
                                                             </div>
+
 
                                                             <div class="row mt-3">
                                                                 <div class="col-12 text-center">
@@ -402,6 +495,8 @@ try {
                                     </button>
 
 
+
+
                                     <!-- Payment Modal -->
                                     <div class="modal fade" id="petPaymentModal" tabindex="-1" aria-labelledby="petPaymentModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
@@ -411,11 +506,13 @@ try {
                                                         <h1>Let's Seal the Deal!</h1>
                                                         <p class="subtitle">To finalize your pet's stay, please scan the QR code below to securely process your payment.</p>
 
+
                                                         <div class="modal-grid">
                                                             <div class="details-section">
                                                                 <p class="transaction-no">Transaction No. 4565789</p>
                                                                 <h2 class="pet-name">Good Boi</h2>
                                                                 <p class="dates">October 5, 12:00 NN - 6:00 PM</p>
+
 
                                                                 <div class="info-grid">
                                                                     <div class="info-row"><span class="label">Service:</span><span class="value">Pet Daycare</span></div>
@@ -427,6 +524,7 @@ try {
                                                                     <div class="info-row"><span class="label">Remaining Balance:</span><span class="value">₱ 250.00</span></div>
                                                                 </div>
 
+
                                                                 <form method="POST" enctype="multipart/form-data">
                                                                     <div class="payment-section">
                                                                         <p class="section-label">Mode of Payment</p>
@@ -435,16 +533,21 @@ try {
                                                                             <label><input type="radio" name="payment_method" value="GCash"> <span>GCash</span></label>
                                                                         </div>
 
+
                                                                         <p class="section-label">Reference No. of Your Payment</p>
                                                                         <input type="text" name="reference_no" placeholder="Enter Reference Number" class="reference-input" required>
+
 
                                                                         <p class="section-label">Proof of Payment</p>
                                                                         <input type="file" name="payment_proof" accept="image/*" required>
                                                                     </div>
 
 
+
+
                                                                 </form>
                                                             </div>
+
 
                                                             <div class="qr-section">
                                                                 <div class="qr-codes">
@@ -478,10 +581,12 @@ try {
                                                 </div>
                                                 <div class="modal-body" id="waiverForm-body">
 
+
                                                     <p>
                                                         We care about the safety and wellbeing of all pets. We want to assure you that we will make every effort to make your pet’s stay with us as pleasant as possible.
                                                         While we provide the best care for your fur babies, there are possible risks that come with availing of pet boarding services.
                                                     </p>
+
 
                                                     <ul>
                                                         <!-- <h6> Health & Vaccination Requirements</h6> -->
@@ -490,6 +595,7 @@ try {
                                                             If the Owner's pet has external parasites, Owner agrees by signing this form that ADORAFUR HAPPY STAY may apply frontline spray to Owner's pet at Owner's own cost, for such parasites so as not to contaminate this facility or the other pets saying at ADORAFUR HAPPY STAY.
                                                         </li>
 
+
                                                         <!-- <h6> Risk and Responsibilities</h6> -->
                                                         <li>
                                                             I recognize that there are inherent risks of injury or illness in any environment associated with cageless pets in daycare and in boarding environments.
@@ -497,6 +603,7 @@ try {
                                                             Knowing such inherent risks and dangers, I understand and affirm that ADORAFUR HAPPY STAY cannot be held responsible for any injury, illness or damage caused by my pet and that I am solely responsible for the same.
                                                             I agree to hold ADORAFUR HAPPY STAY free and harmless from any claims for damage, all defense costs, fees and business losses arising from any claim or any third party may have against ADORAFUR HAPPY STAY.
                                                         </li>
+
 
                                                         <!-- <h6>Aggressive Pets Pollicy</h6> -->
                                                         <li>
@@ -507,6 +614,7 @@ try {
                                                             In any case, we reserve the right to refuse any pet that are hostile, aggressive and appear to be ill for everyone's safety.
                                                         </li>
 
+
                                                         <!-- <h6>Emergency Vet Care</h6> -->
                                                         <li>
                                                             Please be aware that we strive to avoid any accidents during their stay.
@@ -515,11 +623,13 @@ try {
                                                             All pet owners are required to accept these and other risks as a condition of their pet's participation in our services at Adorafur Happy Stay.
                                                         </li>
 
+
                                                         <!-- <h6>Ownership & Liability</h6> -->
                                                         <li>
                                                             Adorafur Happy Stay will not be held responsible for any sickness, injury or death caused by the pet to itself during grooming,
                                                             from pre-existing health conditions, natural disasters, or any illness a pet acquires due to non-vaccination or expired vaccines.
                                                         </li>
+
 
                                                         <!-- <h6>Non-Payment & Abandonment Policy</h6> -->
                                                         <li>
@@ -527,23 +637,28 @@ try {
                                                             for which its agents or employees are not ultimately held to be legally responsible.
                                                         </li>
 
+
                                                         <!-- <h6>Owner Responsibilities</h6> -->
                                                         <li> I certify that my pet has never unduly harmed or threatened anyone or any other pets.</li>
                                                         <li> I expressly agree to be held responsible for any damage to property (i.e. kennels, fencing, walls, flooring etc.) caused by my pet.</li>
                                                         <li> I expressly agree to be held responsible for medical costs for any human injury caused by my pet. </li>
 
+
                                                         <!-- <h6>Pet Health & Medical Disclosures</h6> -->
                                                         <li>The Owner understands that it is possible for us to discover a pet's illness during their stay with us such as arthritis, cysts,
                                                             cancer or any health problems old age brings for senior dogs.</li>
+
 
                                                         These conditions take time to develop and could be discovered during their stay.
                                                         In that case, we will notify you immediately if something feels off with your pet and we would take them to the vet to get a diagnosis and proper treatment,
                                                         costs shall be shouldered by the owner. We understand how stressful and worrisome this is if this may happen to your pet.
                                                         Rest assured we will give them the care they need and provide the best comfort for them as much as possible. We will send you daily updates, vet's advice and etc.
 
+
                                                         <li>
                                                             Your pet’s safety and well being is our absolute #1 priority.
                                                         </li>
+
 
                                                         <li>
                                                             Should the owner leave intentionally their pet in ADORAFUR HAPPY STAY without giving any communication for more than 1 week,
@@ -552,16 +667,21 @@ try {
                                                             Otherwise, Adorafur Happy Stay shall have the dogs/ cats adopted or endorse them to the necessary dog impounding station as deemed necessary
                                                         </li>
 
+
                                                     </ul>
+
 
                                                     Adorafur Happy Stay holds the highest standards to ensure that your pet is handled with respect and cared for properly.
                                                     It is extremely important to us that you know when your pet is under our supervision, Adorafur Happy Stay will provide them with the best care we can provide,
                                                     meeting the high expectations that we personally have for our own pets when under the supervision of another person.
                                                     We recognize and respect that all pets are living beings who have feelings and experience emotion. We value that you have entrusted your pet to us to provide our services to them.
 
+
                                                     <hr>
 
+
                                                     <strong>Conforme: </strong>
+
 
                                                     <p>
                                                         By submitting this agreement form, I, the Owner, acknowledge represent that I have made full disclosure and have read, understand and accept the terms and conditions stated in this agreement.
@@ -570,19 +690,21 @@ try {
                                                         I also agree to follow the health and safety protocols of Adorafur Happy Stay.
                                                     </p>
 
+
                                                     <p>
                                                         <input type="checkbox" id="waiverForm-checkbox" name="agree" value="1" required>
-                                                        I hereby grant Adorafur Happy Stay  and its care takers permission to board and care for my pet
+                                                        I hereby grant Adorafur Happy Stay  and its care takers permission to board and care for my pet
                                                     </p>
                                                     <p>
                                                         <input type="checkbox" id="waiverForm-checkbox" name="agree" value="1" required>
-                                                        I have read and agree with the  Liability Release and Waiver Form
+                                                        I have read and agree with the  Liability Release and Waiver Form
                                                     </p>
                                                 </div>
 
+
                                                 <div class="modal-footer" id="waiverForm-footer">
                                                     <button type="button" class="btn" id="complete-booking">Complete Booking</button>
-                                                    
+                                                   
                                                 </div>
                                             </div>
                                         </div>
@@ -594,11 +716,13 @@ try {
                 </div><!-- /.main-container -->
             </div><!-- /.main -->
 
+
             <script>
                 $(document).ready(function() {
                     // Initially hide pet information and headings
                     $(".pet-information-dog, .pet-information-cat").hide();
                     $(".pet-info h3, .pet-info h6").hide();
+
 
                     // Handle pet selection from dropdown menu
                     $("#petSelectionMenu + .dropdown-menu .dropdown-item").click(function() {
@@ -609,7 +733,9 @@ try {
                         else if (selectedPet === "Cat") $(".pet-information-cat").fadeIn();
                     });
 
+
                     let selectedPet = null;
+
 
                     // Handle hover effect for pet info
                     $(".pet-info").hover(
@@ -620,6 +746,7 @@ try {
                             if (!$(this).hasClass("selected")) $(this).find("h3, h6").fadeOut();
                         }
                     );
+
 
                     // Handle click event for pet info
                     $(".pet-info").click(function() {
@@ -642,12 +769,14 @@ try {
                         }
                     });
 
+
                     // Function to swap images
                     function swapImage(img) {
                         let tempSrc = img.attr("src");
                         img.attr("src", img.attr("data-selected-src"));
                         img.attr("data-selected-src", tempSrc);
                     }
+
 
                     // Handle check-in and check-out time selection
                     $(".check-in-time").click(function() {
@@ -657,6 +786,7 @@ try {
                         $("#checkOutMenu").text($(this).text());
                     });
 
+
                     // Handle Book button click
                     $(".book").click(function() {
                         $(".main-schedule-options").fadeOut(function() {
@@ -664,10 +794,12 @@ try {
                         });
                     });
 
+
                     // Ensure book-1 is initially hidden
                     $(".book-1").hide();
                 });
             </script>
+
 
             <script>
             $(document).ready(function() {
@@ -675,6 +807,7 @@ try {
                 $(".calendar").addClass("disabled-section");
                 $(".checkin-out").addClass("disabled-section");
                 $(".book").addClass("disabled-section");
+
 
                 // Pet selection logic
                 $("#petSelectionMenu + .dropdown-menu .dropdown-item").click(function() {
@@ -684,8 +817,10 @@ try {
                     if (selectedPet === "Dog") $(".pet-information-dog").fadeIn();
                     else if (selectedPet === "Cat") $(".pet-information-cat").fadeIn();
 
+
                     // Enable calendar after pet selection
                     $(".calendar").removeClass("disabled-section");
+
 
                     // Store the selection via AJAX
                     $.ajax({
@@ -701,15 +836,19 @@ try {
                     });
                 });
 
+
                 // Calendar date selection
                 $(document).on("click", ".days-grid .day:not(.disabled)", function() {
                     if ($(".calendar").hasClass("disabled-section")) return;
 
+
                     $(".days-grid .day").removeClass("selected");
                     $(this).addClass("selected");
 
+
                     // Enable time selection after date selection
                     $(".checkin-out").removeClass("disabled-section");
+
 
                     // Store the selected date via AJAX
                     var selectedDate = $(this).data("date");
@@ -726,16 +865,20 @@ try {
                     });
                 });
 
+
                 // Time selection logic
                 let checkInSelected = false;
                 let checkOutSelected = false;
 
+
                 $(".check-in-time").click(function() {
                     if ($(".checkin-out").hasClass("disabled-section")) return;
+
 
                     $("#checkInMenu").text($(this).text());
                     checkInSelected = true;
                     updateBookButton();
+
 
                     // Store check-in time
                     $.ajax({
@@ -751,12 +894,15 @@ try {
                     });
                 });
 
+
                 $(".check-out-time").click(function() {
                     if ($(".checkin-out").hasClass("disabled-section")) return;
+
 
                     $("#checkOutMenu").text($(this).text());
                     checkOutSelected = true;
                     updateBookButton();
+
 
                     // Store check-out time
                     $.ajax({
@@ -772,76 +918,31 @@ try {
                     });
                 });
 
+
                 function updateBookButton() {
                     if (checkInSelected && checkOutSelected) {
                         $(".book").removeClass("disabled-section");
                     }
                 }
 
+
                 // Initialize based on PHP variables
                 <?php if ($petSelected): ?>
                     $(".calendar").removeClass("disabled-section");
                 <?php endif; ?>
 
+
                 <?php if ($dateSelected): ?>
                     $(".checkin-out").removeClass("disabled-section");
                 <?php endif; ?>
+
 
                 <?php if ($timeSelected): ?>
                     $(".book").removeClass("disabled-section");
                 <?php endif; ?>
             });
             </script>
-
-            <script>
-                    $("#complete-booking").click(function() {
-                    // Debug: Log the state of checkboxes
-                    console.log("Checkbox 1 state:", $("#waiverForm-checkbox1").is(":checked"));
-                    console.log("Checkbox 2 state:", $("#waiverForm-checkbox2").is(":checked"));
-
-                    // Check if waiver checkboxes are checked
-                    if (!$("#waiverForm-checkbox1").prop("checked") || !$("#waiverForm-checkbox2").prop("checked")) {
-                        alert("You must agree to the terms and conditions to complete your booking.");
-                        return;
-                    }
-                    
-                    // Show processing notification
-                    alert("Your booking is being processed. Please wait...");
-                    
-                    // Disable the button to prevent multiple submissions
-                    $(this).prop('disabled', true).text('Processing...');
-                    
-                    // Get the payment form
-                    var paymentForm = $("#petPaymentModal form");
-                    var formData = new FormData(paymentForm[0]);
-                    
-                    $.ajax({
-                        type: "POST",
-                        url: "book-pet-hotel.php",
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        dataType: 'json',
-                        success: function(response) {
-                            if (response.success) {
-                                alert("Booking completed successfully!");
-                                $("#waiverForm").modal("hide");
-                                // Redirect to confirmation page or update UI
-                                window.location.href = "booking-confirmation.php";
-                            } else {
-                                alert("Error: " + response.error);
-                                // Re-enable the button if there's an error
-                                $("#complete-booking").prop('disabled', false).text('Complete Booking');
-                            }
-                        },
-                        error: function() {
-                            alert("An error occurred while processing your payment.");
-                            // Re-enable the button if there's an error
-                            $("#complete-booking").prop('disabled', false).text('Complete Booking');
-                        }
-                    });
-                });
-            </script>
+</body>
 
 
 </html>
