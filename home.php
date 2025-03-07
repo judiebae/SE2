@@ -58,12 +58,12 @@
                 
                 <div class="container1">
                     <!-- Daycare Card -->
-                    <div class="booking-card" style="background: url('Home-Pics/daycare.png') center; background-size: cover;">
+                    <a href="booking-daycare.php"><div class="booking-card" style="background: url('Home-Pics/daycare.png') center; background-size: cover;">
                         <div class="booking-title">DAYCARE</div>
                         <div class="booking-desc">
                             Unleash fun and care where your pets play, stay, and thrive at our daycare service!
                         </div>
-                    </div>
+                    </div></a>
 
                     <!-- Pet Hotel Card -->
                     <a href = "book-pet-hotel.php"><div class="booking-card" style="background: url('Home-Pics/pet_hotel.png') center; background-size: cover;">
