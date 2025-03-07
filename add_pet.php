@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -12,6 +15,9 @@ if (!isset($_SESSION['c_id'])) {
 $user_id = $_SESSION['c_id'];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    error_log("Received POST data: " . print_r($_POST, true));
+    error_log("Received FILES data: " . print_r($_FILES, true));
+
     $pet_name = $_POST['pet_name'];
     $pet_size = $_POST['pet_size'];
     $breed = $_POST['breed'];
@@ -62,12 +68,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $vaccination_file = $target_file;
         }
     }
+
+    // Convert gender to proper case if needed
+    $gender = ucfirst(strtolower($_POST['gender']));
     
     // Insert new pet
     $insert_query = "INSERT INTO pet (customer_id, pet_name, pet_size, pet_breed, pet_age, pet_gender, pet_description, 
-                    pet_special_instructions, pet_vaccination_status, pet_vaccination_date_administered, pet_expiry_date, pet_picture, pet_vaccination_card) 
+                    pet_special_instruction, pet_vaccination_status, pet_vaccination_date_administered, pet_vaccination_date_expiry, pet_picture, pet_vaccination_card) 
                     VALUES (:c_id, :pet_name, :pet_size, :breed, :age, :gender, :description, 
                     :special_instructions, :vaccination_status, :date_administered, :expiry_date, :image_path, :vaccination_file)";
+
+    error_log("Attempting to insert new pet with data: " . print_r([
+        'c_id' => $user_id,
+        'pet_name' => $pet_name,
+        'pet_size' => $pet_size,
+        'breed' => $breed,
+        'age' => $age,
+        'gender' => $gender,
+        'description' => $description,
+        'special_instructions' => $special_instructions,
+        'vaccination_status' => $vaccination_status,
+        'date_administered' => $date_administered,
+        'expiry_date' => $expiry_date,
+        'image_path' => $image_path,
+        'vaccination_file' => $vaccination_file
+    ], true));
     
     try {
         $stmt = $conn->prepare($insert_query);
@@ -85,10 +110,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(':image_path', $image_path);
         $stmt->bindParam(':vaccination_file', $vaccination_file);
         $stmt->execute();
-        $_SESSION['success_message'] = "Pet added successfully";
+
+        if ($stmt->rowCount() > 0) {
+            $_SESSION['success_message'] = "Pet added successfully";
+        } else {
+            error_log("Pet insertion failed without throwing an exception");
+            $_SESSION['error_message'] = "Error adding pet: No rows affected";
+        }
     } catch (PDOException $e) {
+        error_log("Database error: " . $e->getMessage());
+        error_log("Error code: " . $e->getCode());
+        error_log("Error trace: " . $e->getTraceAsString());
         $_SESSION['error_message'] = "Error adding pet: " . $e->getMessage();
     }
+}
+
+if (isset($_SESSION['error_message'])) {
+    error_log("Error message set: " . $_SESSION['error_message']);
+} elseif (isset($_SESSION['success_message'])) {
+    error_log("Success message set: " . $_SESSION['success_message']);
+} else {
+    error_log("No message set after processing");
 }
 
 header("Location: profile.php");

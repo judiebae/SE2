@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['pet_id'])) {
     $pet_id = $_POST['pet_id'];
     
     // Verify pet belongs to user
-    $verify_query = "SELECT id, image_path, vaccination_file FROM pets WHERE id = :pet_id AND customer_id = :c_id";
+    $verify_query = "SELECT pet_id, pet_picture, pet_vaccination_card FROM pet WHERE pet_id = :pet_id AND customer_id = :c_id";
     $verify_stmt = $conn->prepare($verify_query);
     $verify_stmt->bindParam(':pet_id', $pet_id);
     $verify_stmt->bindParam(':c_id', $user_id);
@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['pet_id'])) {
     $pet_data = $verify_stmt->fetch(PDO::FETCH_ASSOC);
     
     // Delete pet from database
-    $delete_query = "DELETE FROM pets WHERE id = :pet_id AND customer_id = :c_id";
+    $delete_query = "DELETE FROM pet WHERE pet_id = :pet_id AND customer_id = :c_id";
     
     try {
         $stmt = $conn->prepare($delete_query);
@@ -40,12 +40,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['pet_id'])) {
         $stmt->execute();
         
         // Delete associated files
-        if (!empty($pet_data['image_path']) && file_exists($pet_data['image_path'])) {
-            unlink($pet_data['image_path']);
+        if (!empty($pet_data['pet_pictue']) && file_exists($pet_data['pet_pictue'])) {
+            unlink($pet_data['pet_pictue']);
         }
         
-        if (!empty($pet_data['vaccination_file']) && file_exists($pet_data['vaccination_file'])) {
-            unlink($pet_data['vaccination_file']);
+        if (!empty($pet_data['pet_vaccination_card']) && file_exists($pet_data['pet_vaccination_card'])) {
+            unlink($pet_data['pet_vaccination_card']);
         }
         
         $_SESSION['success_message'] = "Pet deleted successfully";

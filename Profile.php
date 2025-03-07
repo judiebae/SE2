@@ -11,6 +11,14 @@ if (!isset($_SESSION['c_id'])) {
     exit();
 }
 
+// Add this near the top of your profile.php file, after starting the session
+if (isset($_SESSION['success_message'])) {
+    echo '<div class="alert alert-success">' . $_SESSION['success_message'] . '</div>';
+    unset($_SESSION['success_message']);
+} elseif (isset($_SESSION['error_message'])) {
+    echo '<div class="alert alert-danger">' . $_SESSION['error_message'] . '</div>';
+    unset($_SESSION['error_message']);
+}
 // Get user ID from session
 $user_id = $_SESSION['c_id'];
 
@@ -515,12 +523,12 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                                     
                                     <div class="mb-3">
                                         <label class="form-label">BREED</label>
-                                        <input type="text" name="breed" class="form-control" placeholder="Type Breed Here">
+                                        <input type="text" name="breed" class="form-control" placeholder="Type Breed Here" required>
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label class="form-label">AGE</label>
-                                        <input type="text" name="age" class="form-control" placeholder="Type Age Here">
+                                        <input type="text" name="age" class="form-control" placeholder="Type Age Here" required>
                                     </div>
 
                                     <div class="mb-3">
@@ -539,7 +547,7 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                                     
                                     <div class="mb-3">
                                         <label class="form-label">DESCRIPTION</label>
-                                        <textarea name="description" class="form-control" placeholder="e.x. White Spots" rows="3" id="petDescription"></textarea>
+                                        <textarea name="description" class="form-control" placeholder="e.x. White Spots" rows="3" id="petDescription" required></textarea>
                                     </div>
                                 </div>
                                 
@@ -552,11 +560,11 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                                     
                                     <div class="mb-3">
                                         <label class="form-label">VACCINATION STATUS</label>
-                                        <input type="file" name="vaccination_file" class="form-control mb-2" accept="image/*,application/pdf">
+                                        <input type="file" name="vaccination_file" class="form-control mb-2" accept="image/*,application/pdf" required>
                                         
                                         <div class="radio-group">
                                             <div>
-                                                <input type="radio" name="vaccination_status" id="vaccinated" value="vaccinated">
+                                                <input type="radio" name="vaccination_status" id="vaccinated" value="vaccinated" required>
                                                 <label for="vaccinated">Vaccinated</label>
                                             </div>
                                             <div>
@@ -568,17 +576,17 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                                     
                                     <div class="mb-3">
                                         <label class="form-label">DATE ADMINISTERED</label>
-                                        <input type="date" name="date_administered" class="form-control">
+                                        <input type="date" name="date_administered" class="form-control" required >
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label class="form-label">EXPIRY DATE</label>
-                                        <input type="date" name="expiry_date" class="form-control">
+                                        <input type="date" name="expiry_date" class="form-control" required>
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label class="form-label">SPECIAL INSTRUCTIONS</label>
-                                        <textarea name="special_instructions" class="form-control" placeholder="e.x. Medications" rows="3" id="petInstruction"></textarea>
+                                        <textarea name="special_instructions" class="form-control" placeholder="e.x. Medications" rows="3" id="petInstruction" required></textarea>
                                     </div>
                                 </div>
                             </div>

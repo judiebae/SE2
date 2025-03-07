@@ -82,10 +82,12 @@ function handleLogin($conn) {
         $stmt->execute([$email]);
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($admin && password_verify($password, $admin['admin_password'])) {
+        if ($admin && $password === $admin['admin_password']) {
             $_SESSION['admin_id'] = $admin['admin_id'];
-            header("Location: admin_dashboard.php");
+            header("Location: admin_navbar/admin_home.php");
             exit();
+        } else {
+            // Handle invalid credentials
         }
 
         // If not an admin, check customer login
