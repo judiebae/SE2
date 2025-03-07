@@ -4,19 +4,19 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 include("connect.php");
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['c_id'])) {
     header('Content-Type: application/json');
     echo json_encode(['error' => 'Not authenticated']);
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['c_id'];
 
 if (isset($_GET['pet_id'])) {
     $pet_id = $_GET['pet_id'];
     
     // Verify pet belongs to user
-    $query = "SELECT * FROM pets WHERE id = :pet_id AND customer_id = :user_id";
+    $query = "SELECT * FROM pet WHERE pet_id = :pet_id AND customer_id = :user_id";
     $stmt = $conn->prepare($query);
     $stmt->bindParam(':pet_id', $pet_id);
     $stmt->bindParam(':user_id', $user_id);

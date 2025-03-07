@@ -142,7 +142,7 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                     </li>
 
                     <li class="nav-item">
-                        <a href="logout.php" class="btn btn-primary">LOGOUT</a>
+                        <a href="profile.php" class="btn btn-primary">PROFILE</a>
                     </li>
                 </ul>
             </div>
@@ -324,14 +324,14 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                             <tr>
                                 <td class="petDeets">
                                     <div class="petImg">
-                                        <img src="<?php echo !empty($pet['image_path']) ? $pet['image_path'] : 'Profile-Pics/pet_icon.png'; ?>" alt="Pet Icon" class="pet-icon">
+                                        <img src="<?php echo !empty($pet['pet_picture']) ? $pet['pet_picture'] : 'Profile-Pics/pet_icon.png'; ?>" alt="Pet Icon" class="pet-icon">
                                     </div>
                                     <div class="petInfo">
-                                        <p class="petname"><?php echo $pet['pet_name']; ?></p>
-                                        <p class="petdesc"><?php echo $pet['pet_gender']; ?>, <?php echo $pet['pet_breed']; ?>, <?php echo $pet['pet_age']; ?></p>
+                                        <p class="petname"><?php echo htmlspecialchars($pet['pet_name']); ?></p>
+                                        <p class="petdesc"><?php echo htmlspecialchars($pet['pet_gender']); ?>, <?php echo htmlspecialchars($pet['pet_breed']); ?>, <?php echo htmlspecialchars($pet['pet_age']); ?></p>
                                         <div class="actions">
                                             <!-- View & Edit Button -->
-                                            <button type="button" class="btn" id="ve" data-bs-toggle="modal" data-bs-target="#veModal" data-pet-id="<?php echo $pet['pet_id']; ?>">
+                                            <button type="button" class="btn view-edit-pet" id="ve" data-bs-toggle="modal" data-bs-target="#veModal" data-pet-id="<?php echo $pet['pet_id']; ?>">
                                                 <p class="view-and-edit">View & Edit</p>
                                             </button>
 
@@ -382,22 +382,22 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label">NAME</label>
-                                    <input type="text" class="form-control" name="name" id="edit_pet_name" value="<?php echo $pets['pet_name']; ?>">
+                                    <input type="text" class="form-control" name="name" id="edit_pet_name" >
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">BREED</label>
-                                    <input type="text" class="form-control" name="breed" id="edit_pet_breed" value="<?php echo $pet['pet_breed']; ?>">
+                                    <input type="text" class="form-control" name="breed" id="edit_pet_breed" >
                                 </div>
                             </div>
                             
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label">PET SIZE</label>
-                                    <input type="text" class="form-control" name="pet_size" id="edit_pet_size" value="<?php echo $pet['pet_size']; ?>">
+                                    <input type="text" class="form-control" name="pet_size" id="edit_pet_size" >
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">AGE</label>
-                                    <input type="text" class="form-control" name="age" id="edit_pet_age" value="<?php echo $pet['pet_age']; ?>">
+                                    <input type="text" class="form-control" name="age" id="edit_pet_age" >
                                 </div>
                             </div>
                             
@@ -411,12 +411,12 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
 
                             <div class="mb-3">
                                 <label class="form-label">DESCRIPTION</label>
-                                <textarea class="form-control" name="description" rows="2" id="petDescription" value="<?php echo $pet['pet_description']; ?>"></textarea>
+                                <textarea class="form-control" name="description" rows="2" id="petDescription" ></textarea>
                             </div>
                             
                             <div class="mb-3">
                                 <label class="form-label">SPECIAL INSTRUCTIONS</label>
-                                <textarea class="form-control" name="special_instructions" rows="2" id="petInstruction" value="<?php echo $pet['pet_special_instructions']; ?>"></textarea>
+                                <textarea class="form-control" name="special_instructions" rows="2" id="petInstruction" ></textarea>
                             </div>
                             
                             <div class="row mb-3">
@@ -430,12 +430,12 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                             
                                 <div class="col-md-4">
                                     <label class="form-label">DATE ADMINISTERED</label>
-                                    <input type="date" class="form-control" name="date_administered" id="date_administered" value="<?php echo $pet['pet_vaccination_date_administered']; ?>">
+                                    <input type="date" class="form-control" name="date_administered" id="date_administered">
                                 </div>
                             
                                 <div class="col-md-4">
                                     <label class="form-label">EXPIRY DATE</label>
-                                    <input type="date" class="form-control" name="expiry_date" id="expiry_date" value="<?php echo $pet['pet_vaccination_date_expiry']; ?>"> 
+                                    <input type="date" class="form-control" name="expiry_date" id="expiry_date"> 
                                 </div>
                             </div>
                         </div>
@@ -503,7 +503,7 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                                         <label class="form-label">PET SIZE</label>
                                         <div class="radio-group">
                                             <div>
-                                                <input type="radio" name="pet_size" id="small_dog" value="small_dog">
+                                                <input type="radio" name="pet_size" id="small_dog" value="small_dog" required>
                                                 <label for="small_dog" id="pet-size">Small Dog</label>
                                             </div>
                                             <div>
@@ -535,7 +535,7 @@ $profile_picture = isset($fetch_cust_info['profile_picture']) && !empty($fetch_c
                                         <label class="form-label">GENDER</label>
                                         <div class="radio-group">
                                             <div>
-                                                <input type="radio" name="gender" id="male" value="male">
+                                                <input type="radio" name="gender" id="male" value="male" required>
                                                 <label for="male" id="pet-gender">Male</label>
                                             </div>
                                             <div>
@@ -769,28 +769,38 @@ document.addEventListener('DOMContentLoaded', function() {
         veModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
             const petId = button.getAttribute('data-pet-id');
+            console.log('Pet ID:', petId); // Log the pet ID for debugging
             document.getElementById('edit_pet_id').value = petId;
             
             // Fetch pet data via AJAX
             fetch(`get_pet_data.php?pet_id=${petId}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    document.getElementById('edit_pet_name').value = data.name;
-                    document.getElementById('edit_pet_breed').value = data.breed;
-                    document.getElementById('edit_pet_size').value = data.pet_size;
-                    document.getElementById('edit_pet_age').value = data.age;
-                    document.getElementById('gender-dropdown').value = data.gender;
-                    document.getElementById('petDescription').value = data.description;
-                    document.getElementById('petInstruction').value = data.special_instructions;
-                    document.getElementById('vaccination_status').value = data.vaccination_status;
-                    document.getElementById('date_administered').value = data.date_administered;
-                    document.getElementById('expiry_date').value = data.expiry_date;
+                    console.log('Received pet data:', data); // Log the received data
+                    document.getElementById('edit_pet_name').value = data.pet_name || '';
+                    document.getElementById('edit_pet_breed').value = data.pet_breed || '';
+                    document.getElementById('edit_pet_size').value = data.pet_size || '';
+                    document.getElementById('edit_pet_age').value = data.pet_age || '';
+                    document.getElementById('gender-dropdown').value = data.pet_gender || '';
+                    document.getElementById('petDescription').value = data.pet_description || '';
+                    document.getElementById('petInstruction').value = data.pet_special_instructions || '';
+                    document.getElementById('vaccination_status').value = data.pet_vaccination_status || '';
+                    document.getElementById('date_administered').value = data.pet_vaccination_date_administered || '';
+                    document.getElementById('expiry_date').value = data.pet_expiry_date || '';
                     
-                    if (data.image_path) {
-                        document.getElementById('pet-image-preview').src = data.image_path;
+                    if (data.pet_picture) {
+                        document.getElementById('pet-image-preview').src = data.pet_picture;
                     }
                 })
-                .catch(error => console.error('Error fetching pet data:', error));
+                .catch(error => {
+                    console.error('Error fetching pet data:', error);
+                    alert('Error loading pet data. Please try again.');
+                });
         });
     }
     
