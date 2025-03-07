@@ -14,10 +14,6 @@ include('../connect.php');
 // Process membership update form if submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['memb-status'])) {
     try {
-        // Create a PDO instance for the update
-        $updatePdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-        $updatePdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
         // Get form data
         $membershipStatus = $_POST['memb-status'];
         $paymentMethod = $_POST['paymentMethod'] ?? '';
@@ -25,8 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['memb-status'])) {
         $refNumber = $_POST['refNumber'] ?? '';
         
         // Update customer membership status
-        $updateSql = "UPDATE customer SET customer_membership_status = :status WHERE customer_id = :id";
-        $updateStmt = $updatePdo->prepare($updateSql);
+        $updateSql = "UPDATE customer SET c_membership_status = :status WHERE c_id = :id";
+        $updateStmt = $conn->prepare($updateSql);
         $updateStmt->bindParam(':status', $membershipStatus, PDO::PARAM_STR);
         $updateStmt->bindParam(':id', $customerId, PDO::PARAM_INT);
         $updateStmt->execute();
@@ -43,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['memb-status'])) {
             
             if (move_uploaded_file($_FILES['proofOfPayment']['tmp_name'], $uploadFile)) {
                 // Insert payment record
-                $paymentSql = "INSERT INTO payment (customer_id, payment_amount, payment_method, payment_reference_number, payment_status, proof_of_payment) 
+                $paymentSql = "INSERT INTO payment (customer_id, pay_amount, pay_method, pay_reference_number, pay_status, proof_of_payment) 
                                VALUES (:customer_id, :amount, :method, :ref_number, 'Completed', :proof)";
                 $paymentStmt = $updatePdo->prepare($paymentSql);
                 $paymentStmt->bindParam(':customer_id', $customerId, PDO::PARAM_INT);
@@ -56,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['memb-status'])) {
         }
         
         // Redirect to refresh the page
-        header("Location: draft.php?id=$customerId&updated=1");
+        header("Location: admin_customers_profile.php?id=$customerId&updated=1");
         exit;
     } catch (PDOException $e) {
         $updateError = "Error updating membership: " . $e->getMessage();
@@ -65,13 +61,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['memb-status'])) {
 
 try {
     $customerSql = "SELECT 
-                    c.customer_id, 
-                    CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS owner_name,
-                    c.customer_membership_status as membership_status
+                    c.c_id, 
+                    CONCAT(c.c_first_name, ' ', c.c_last_name) AS owner_name,
+                    m.membership_status as membership_status
                 FROM 
                     customer c
+                LEFT JOIN
+                    membership_status m on c.c_membership_status = m.membership_id
                 WHERE 
-                    c.customer_id = :customer_id";
+                    c.c_id = :customer_id";
     
     $customerStmt = $conn->prepare($customerSql);
     $customerStmt->bindParam(':customer_id', $customerId, PDO::PARAM_INT);
@@ -108,26 +106,26 @@ try {
         t.booking_id,
         s.service_name,
         p.pet_name,
-        c.customer_id,
-        pay.payment_amount,
-        pay.payment_status,
-        pay.payment_reference_number,
-        pay.payment_method,
-        pay.payment_date
+        c.c_id,
+        pay.pay_amount,
+        pay.pay_status,
+        pay.pay_reference_number,
+        pay.pay_method,
+        pay.pay_date
     FROM 
-        booking_fact_table t
+        bookings t
     JOIN 
         service s ON t.service_id = s.service_id
     JOIN 
         pet p ON t.pet_id = p.pet_id
     JOIN 
-        customer c ON p.customer_id = c.customer_id 
+        customer c ON p.customer_id = c.c_id 
     JOIN 
-        payment pay ON pay.payment_id = t.payment_id
+        payment pay ON pay.pay_id = t.payment_id
     WHERE 
-        c.customer_id = :customer_id
+        c.c_id = :customer_id
     ORDER BY 
-        pay.payment_date DESC";
+        pay.pay_date DESC";
 
     $transactionsStmt = $conn->prepare($transactionsSql);
     $transactionsStmt->bindParam(':customer_id', $customerId, PDO::PARAM_INT);
@@ -284,17 +282,17 @@ if (empty($transactions)) {
                                     <td><?php echo htmlspecialchars($transaction['pet_name']); ?></td>
                                     <td>
                                         <div class="amount-container">
-                                            <span class="amount-value"><?php echo htmlspecialchars($transaction['payment_amount']); ?></span>
-                                            <span class="amount-status"><?php echo htmlspecialchars($transaction['payment_status']); ?></span>
+                                            <span class="amount-value"><?php echo htmlspecialchars($transaction['pay_amount']); ?></span>
+                                            <span class="amount-status"><?php echo htmlspecialchars($transaction['pay_status']); ?></span>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="ref-container">
-                                            <span><?php echo htmlspecialchars($transaction['payment_reference_number']); ?></span>
-                                            <span class="ref-source"><?php echo htmlspecialchars($transaction['payment_method']); ?></span>
+                                            <span><?php echo htmlspecialchars($transaction['pay_reference_number']); ?></span>
+                                            <span class="ref-source"><?php echo htmlspecialchars($transaction['pay_method']); ?></span>
                                         </div>
                                     </td>
-                                    <td><?php echo htmlspecialchars($transaction['payment_date']); ?></td>
+                                    <td><?php echo htmlspecialchars($transaction['pay_date']); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -316,7 +314,7 @@ if (empty($transactions)) {
 
             <img src="admin-pics/memb-modal-header.png" class="status-header">
             <h2 class="memb-status-header">Membership Status Update</h2>
-            <form id="membershipForm" action="draft.php?id=<?php echo htmlspecialchars($customerId); ?>" method="post" enctype="multipart/form-data">
+            <form id="membershipForm" action="admin_customers_profile.php?id=<?php echo htmlspecialchars($customerId); ?>" method="post" enctype="multipart/form-data">
     <input type="hidden" name="customer_id" value="<?php echo htmlspecialchars($customerId); ?>">
     
     <div style="display: flex;">
@@ -333,13 +331,13 @@ if (empty($transactions)) {
             
             <br>
             <label for="membershipStatus">Membership Status:</label><br>
-            <input type="radio" id="status-reg" name="memb-status" value="REGULAR" <?php echo ($customer['membership_status'] == 'REGULAR' || !$customer['membership_status']) ? 'checked' : ''; ?>>
+            <input type="radio" id="status-reg" name="memb-status" value="1" <?php echo ($customer['membership_status'] == 'REGULAR' || !$customer['membership_status']) ? 'checked' : ''; ?>>
             <label for="status-reg">Regular</label><br>
-            <input type="radio" id="status-silver" name="memb-status" value="SILVER" <?php echo ($customer['membership_status'] == 'SILVER') ? 'checked' : ''; ?>>
+            <input type="radio" id="status-silver" name="memb-status" value="2" <?php echo ($customer['membership_status'] == 'SILVER') ? 'checked' : ''; ?>>
             <label for="status-silver">Silver</label><br>
-            <input type="radio" id="status-gold" name="memb-status" value="GOLD" <?php echo ($customer['membership_status'] == 'GOLD') ? 'checked' : ''; ?>>
+            <input type="radio" id="status-gold" name="memb-status" value="3" <?php echo ($customer['membership_status'] == 'GOLD') ? 'checked' : ''; ?>>
             <label for="status-gold">Gold</label><br>
-            <input type="radio" id="status-platinum" name="memb-status" value="PLATINUM" <?php echo ($customer['membership_status'] == 'PLATINUM') ? 'checked' : ''; ?>>
+            <input type="radio" id="status-platinum" name="memb-status" value="4" <?php echo ($customer['membership_status'] == 'PLATINUM') ? 'checked' : ''; ?>>
             <label for="status-platinum">Platinum</label><br>
         </div>
 
