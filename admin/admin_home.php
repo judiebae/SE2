@@ -139,7 +139,7 @@ try {
                         data-mop="<?php echo htmlspecialchars($fetch_reservations['pay_mop'])?>"
                         data-reference-number="<?php echo htmlspecialchars($fetch_reservations['pay_reference_number'])?>"
 
-                            <?php echo htmlspecialchars($fetch_reservations['b_id']); ?>
+                           <strong> <?php echo htmlspecialchars($fetch_reservations['b_id']); ?> </strong>
                         </button>
                     </td>
                    
