@@ -59,19 +59,19 @@
                 <div class="container1">
                     <!-- Daycare Card -->
                     <div class="booking-card" style="background: url('Home-Pics/daycare.png') center; background-size: cover;">
-                        <div class="booking-title">DAYCARE</div>
+                    <button class="booking-title" onclick="window.location.href='book-pet-daycare.php'" style = "background-color: transparent;">DAYCARE</button>
                         <div class="booking-desc">
                             Unleash fun and care where your pets play, stay, and thrive at our daycare service!
                         </div>
                     </div>
 
                     <!-- Pet Hotel Card -->
-                    <a href = "book-pet-hotel.php"><div class="booking-card" style="background: url('Home-Pics/pet_hotel.png') center; background-size: cover;">
-                        <div class="booking-title">PET HOTEL</div>
+                    <div class="booking-card" style="background: url('Home-Pics/pet_hotel.png') center; background-size: cover;">
+                    <button class="booking-title" onclick="window.location.href='book-pet-hotel.php'" style = "background-color: transparent;">PET HOTEL</button>
                         <div class="booking-desc">
                             Home away from home—where your pets enjoy luxury, love, and plenty of play!
                         </div>
-                    </div></a>
+                    </div>
                 </div><!-- containter1 -->
             </div><!-- second scroll title -->
         </div><!-- second scroll -->
