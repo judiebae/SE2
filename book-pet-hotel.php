@@ -1,15 +1,107 @@
 <?php
-require_once 'connect.php'; // Include database connection
+session_start();
 
-try {
-    // Fetch pet details from the database
-    $stmt = $conn->prepare("SELECT pet_id, pet_name, pet_breed, pet_age, pet_gender, pet_size FROM Pet");
-    $stmt->execute();
-    $pets = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Database error: " . $e->getMessage());
+$petSelected = false;
+$dateSelected = false;
+$timeSelected = false;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['pet_type'])) {
+        $_SESSION['pet_type'] = $_POST['pet_type'];
+        $petSelected = true;
+        echo json_encode(['success' => true, 'message' => 'Pet type saved']);
+        exit;
+    }
+    
+    if (isset($_POST['selected_date'])) {
+        $_SESSION['selected_date'] = $_POST['selected_date'];
+        $dateSelected = true;
+        echo json_encode(['success' => true, 'message' => 'Date saved']);
+        exit;
+    }
+    
+    if (isset($_POST['check_in_time'])) {
+        $_SESSION['check_in_time'] = $_POST['check_in_time'];
+        $timeSelected = true;
+        echo json_encode(['success' => true, 'message' => 'Check-in time saved']);
+        exit;
+    }
+    
+    if (isset($_POST['check_out_time'])) {
+        $_SESSION['check_out_time'] = $_POST['check_out_time'];
+        $timeSelected = true;
+        echo json_encode(['success' => true, 'message' => 'Check-out time saved']);
+        exit;
+    }
+}
+
+if (isset($_SESSION['pet_type'])) $petSelected = true;
+if (isset($_SESSION['selected_date'])) $dateSelected = true;
+if (isset($_SESSION['check_in_time']) && isset($_SESSION['check_out_time'])) $timeSelected = true;
+
+function generateCalendar($month, $year) {
+    $firstDayOfMonth = mktime(0, 0, 0, $month, 1, $year);
+    $numberDays = date('t', $firstDayOfMonth);
+    $dateComponents = getdate($firstDayOfMonth);
+    $monthName = $dateComponents['month'];
+    $dayOfWeek = $dateComponents['wday'];
+    $dateToday = date('Y-m-d');
+
+    $calendar = "<table class='calendar'>";
+    $calendar .= "<caption>$monthName $year</caption>";
+    $calendar .= "<tr>";
+
+    $weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    foreach($weekdays as $day) {
+        $calendar .= "<th class='header'>$day</th>";
+    }
+
+    $calendar .= "</tr><tr>";
+
+    if ($dayOfWeek > 0) { 
+        $calendar .= "<td colspan='$dayOfWeek'>&nbsp;</td>"; 
+    }
+
+    $currentDay = 1;
+
+    while ($currentDay <= $numberDays) {
+        if ($dayOfWeek == 7) {
+            $dayOfWeek = 0;
+            $calendar .= "</tr><tr>";
+        }
+        
+        $currentDayRel = str_pad($currentDay, 2, "0", STR_PAD_LEFT);
+        $date = "$year-$month-$currentDayRel";
+        
+        $today = $date == $dateToday ? "today" : "";
+        $past = strtotime($date) < strtotime($dateToday) ? "past" : "";
+        
+        $calendar .= "<td class='day $today $past' data-date='$date'>";
+        $calendar .= $currentDay;
+        $calendar .= "</td>";
+        
+        $currentDay++;
+        $dayOfWeek++;
+    }
+
+    if ($dayOfWeek != 7) { 
+        $remainingDays = 7 - $dayOfWeek;
+        $calendar .= "<td colspan='$remainingDays'>&nbsp;</td>"; 
+    }
+
+    $calendar .= "</tr>";
+    $calendar .= "</table>";
+
+    return $calendar;
+}
+
+function outputBookingCalendar() {
+    $month = date('m');
+    $year = date('Y');
+    echo generateCalendar($month, $year);
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -177,95 +269,43 @@ try {
                             <div class="pets"><b>Pet/s</b></div>
 
                             <table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Breed</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>Size</th>
-            <th>Price</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="petTableBody">
-        <tr>
-            <!-- Dropdown inside the Name column -->
-            <td data-label="Name">
-                <select class="petSelect" onchange="updatePetDetails(this)">
-                    <option value="">Choose Pet</option>
-                    <?php foreach ($pets as $pet): ?>
-                        <option value="<?= htmlspecialchars(json_encode([
-                            'pet_breed' => $pet['pet_breed'],
-                            'pet_age' => $pet['pet_age'],
-                            'pet_gender' => $pet['pet_gender'],
-                            'pet_size' => $pet['pet_size'],
-                            'pet_price' => isset($pet['pet_price']) ? $pet['pet_price'] : '₱0.00'
-                        ]), ENT_QUOTES, 'UTF-8') ?>">
-                            <?= htmlspecialchars($pet['pet_name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </td>
-            <td data-label="Breed"></td>
-            <td data-label="Age"></td>
-            <td data-label="Gender"></td>
-            <td data-label="Size"></td>
-            <td data-label="Price">₱0.00</td>
-            <td><button type="button" onclick="addPetRow()">+</button></td>
-        </tr>
-    </tbody>
-</table>
+                                <thead>
+                                    <tr>
 
-<script>
-    function updatePetDetails(selectElement) {
-        let selectedPet = selectElement.value ? JSON.parse(selectElement.value) : null;
-        let row = selectElement.closest("tr");
+                                        <th>NAME</th>
+                                        <th>BREED</th>
+                                        <th>AGE</th>
+                                        <th>GENDER</th>
+                                        <th>SIZE</th>
+                                        <th>PRICE</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    // Sample pet data array
+                                    $pets = [
+                                        ['name' => 'Max', 'breed' => 'Golden Retriever', 'age' => '4 years', 'gender' => 'Male', 'size' => 'Large', 'price' => '₱3500.00'],
+                                        ['name' => 'Luna', 'breed' => 'Poodle', 'age' => '1.5 years', 'gender' => 'Female', 'size' => 'Medium', 'price' => '₱2500.00'],
+                                        ['name' => 'Buddy', 'breed' => 'Labrador', 'age' => '3 years', 'gender' => 'Male', 'size' => 'Large', 'price' => '₱3000.00'],
+                                        ['name' => 'Daisy', 'breed' => 'Beagle', 'age' => '2 years', 'gender' => 'Female', 'size' => 'Small', 'price' => '₱2000.00'],
+                                        ['name' => 'Rocky', 'breed' => 'Bulldog', 'age' => '5 years', 'gender' => 'Male', 'size' => 'Medium', 'price' => '₱4000.00'],
+                                    ];
 
-        row.querySelector("[data-label='Breed']").textContent = selectedPet ? selectedPet.pet_breed : "";
-        row.querySelector("[data-label='Age']").textContent = selectedPet ? selectedPet.pet_age + " years" : "";
-        row.querySelector("[data-label='Gender']").textContent = selectedPet ? selectedPet.pet_gender : "";
-        row.querySelector("[data-label='Size']").textContent = selectedPet ? selectedPet.pet_size : "";
-        row.querySelector("[data-label='Price']").textContent = selectedPet ? selectedPet.pet_price : "₱0.00";
-    }
+                                    // Generate table rows
+                                    foreach ($pets as $pet) {
+                                        echo "<tr>";
 
-    function addPetRow() {
-        let tableBody = document.getElementById("petTableBody");
-        let newRow = document.createElement("tr");
-
-        newRow.innerHTML = `
-            <td data-label="Name">
-                <select class="petSelect" onchange="updatePetDetails(this)">
-                    <option value="">Choose Pet</option>
-                    <?php foreach ($pets as $pet): ?>
-                        <option value="<?= htmlspecialchars(json_encode([
-                            'pet_breed' => $pet['pet_breed'],
-                            'pet_age' => $pet['pet_age'],
-                            'pet_gender' => $pet['pet_gender'],
-                            'pet_size' => $pet['pet_size'],
-                            'pet_price' => isset($pet['pet_price']) ? $pet['pet_price'] : '₱0.00'
-                        ]), ENT_QUOTES, 'UTF-8') ?>">
-                            <?= htmlspecialchars($pet['pet_name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </td>
-            <td data-label="Breed"></td>
-            <td data-label="Age"></td>
-            <td data-label="Gender"></td>
-            <td data-label="Size"></td>
-            <td data-label="Price">₱0.00</td>
-            <td><button type="button" onclick="removePetRow(this)">-</button></td>
-        `;
-
-        tableBody.appendChild(newRow);
-    }
-
-    function removePetRow(button) {
-        let row = button.closest("tr");
-        row.remove();
-    }
-</script>
+                                        echo "<td data-label='Name'>{$pet['name']}</td>";
+                                        echo "<td data-label='Breed'>{$pet['breed']}</td>";
+                                        echo "<td data-label='Age'>{$pet['age']}</td>";
+                                        echo "<td data-label='Gender'>{$pet['gender']}</td>";
+                                        echo "<td data-label='Size'>{$pet['size']}</td>";
+                                        echo "<td data-label='Price'>{$pet['price']}</td>";
+                                        echo "</tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
 
                             <div class="lower-section">
                                 <button type="button" class="btn" id="regPet" data-bs-toggle="modal" data-bs-target="#petRegistrationModal">
@@ -792,56 +832,6 @@ try {
                 <?php endif; ?>
             });
             </script>
-
-            <script>
-                    $("#complete-booking").click(function() {
-                    // Debug: Log the state of checkboxes
-                    console.log("Checkbox 1 state:", $("#waiverForm-checkbox1").is(":checked"));
-                    console.log("Checkbox 2 state:", $("#waiverForm-checkbox2").is(":checked"));
-
-                    // Check if waiver checkboxes are checked
-                    if (!$("#waiverForm-checkbox1").prop("checked") || !$("#waiverForm-checkbox2").prop("checked")) {
-                        alert("You must agree to the terms and conditions to complete your booking.");
-                        return;
-                    }
-                    
-                    // Show processing notification
-                    alert("Your booking is being processed. Please wait...");
-                    
-                    // Disable the button to prevent multiple submissions
-                    $(this).prop('disabled', true).text('Processing...');
-                    
-                    // Get the payment form
-                    var paymentForm = $("#petPaymentModal form");
-                    var formData = new FormData(paymentForm[0]);
-                    
-                    $.ajax({
-                        type: "POST",
-                        url: "book-pet-hotel.php",
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        dataType: 'json',
-                        success: function(response) {
-                            if (response.success) {
-                                alert("Booking completed successfully!");
-                                $("#waiverForm").modal("hide");
-                                // Redirect to confirmation page or update UI
-                                window.location.href = "booking-confirmation.php";
-                            } else {
-                                alert("Error: " + response.error);
-                                // Re-enable the button if there's an error
-                                $("#complete-booking").prop('disabled', false).text('Complete Booking');
-                            }
-                        },
-                        error: function() {
-                            alert("An error occurred while processing your payment.");
-                            // Re-enable the button if there's an error
-                            $("#complete-booking").prop('disabled', false).text('Complete Booking');
-                        }
-                    });
-                });
-            </script>
 </body>
-</html>
 
+</html>
