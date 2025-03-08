@@ -1,107 +1,80 @@
 <?php
-session_start();
+require_once 'connect.php'; // Include database connection
 
-$petSelected = false;
-$dateSelected = false;
-$timeSelected = false;
+// Initialize session variables for booking flow
+if (!isset($_SESSION)) {
+    session_start();
+}
 
+// Initial state flags
+$petSelected = isset($_SESSION['pet_type']);
+$dateSelected = isset($_SESSION['selected_date']);
+$timeSelected = isset($_SESSION['check_in_time']) && isset($_SESSION['check_out_time']);
+
+// Process AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Handle pet type selection
     if (isset($_POST['pet_type'])) {
         $_SESSION['pet_type'] = $_POST['pet_type'];
-        $petSelected = true;
         echo json_encode(['success' => true, 'message' => 'Pet type saved']);
         exit;
     }
     
+    // Handle date selection
     if (isset($_POST['selected_date'])) {
         $_SESSION['selected_date'] = $_POST['selected_date'];
-        $dateSelected = true;
         echo json_encode(['success' => true, 'message' => 'Date saved']);
         exit;
     }
     
+    // Handle check-in time
     if (isset($_POST['check_in_time'])) {
         $_SESSION['check_in_time'] = $_POST['check_in_time'];
-        $timeSelected = true;
         echo json_encode(['success' => true, 'message' => 'Check-in time saved']);
         exit;
     }
     
+    // Handle check-out time
     if (isset($_POST['check_out_time'])) {
         $_SESSION['check_out_time'] = $_POST['check_out_time'];
-        $timeSelected = true;
         echo json_encode(['success' => true, 'message' => 'Check-out time saved']);
+        exit;
+    }
+    
+    // Process booking completion
+    if (isset($_POST['complete_booking'])) {
+        // Here you would save all booking data to database
+        // For demonstration, we'll just return success
+        echo json_encode(['success' => true, 'message' => 'Booking completed successfully']);
         exit;
     }
 }
 
-if (isset($_SESSION['pet_type'])) $petSelected = true;
-if (isset($_SESSION['selected_date'])) $dateSelected = true;
-if (isset($_SESSION['check_in_time']) && isset($_SESSION['check_out_time'])) $timeSelected = true;
-
-function generateCalendar($month, $year) {
-    $firstDayOfMonth = mktime(0, 0, 0, $month, 1, $year);
-    $numberDays = date('t', $firstDayOfMonth);
-    $dateComponents = getdate($firstDayOfMonth);
-    $monthName = $dateComponents['month'];
-    $dayOfWeek = $dateComponents['wday'];
-    $dateToday = date('Y-m-d');
-
-    $calendar = "<table class='calendar'>";
-    $calendar .= "<caption>$monthName $year</caption>";
-    $calendar .= "<tr>";
-
-    $weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    foreach($weekdays as $day) {
-        $calendar .= "<th class='header'>$day</th>";
+try {
+    // Fetch pet details from the database
+    $stmt = $conn->prepare("SELECT pet_id, pet_name, pet_breed, pet_age, pet_gender, pet_size FROM Pet");
+    $stmt->execute();
+    $pets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get pricing for different pet sizes
+    $pricingStmt = $conn->prepare("SELECT service_name, service_rate FROM Service WHERE service_name LIKE 'Pet Hotel%'");
+    $pricingStmt->execute();
+    $pricing = $pricingStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    
+    // Fetch logged in customer info if available
+    $customerInfo = null;
+    if (isset($_SESSION['customer_id'])) {
+        $custStmt = $conn->prepare("SELECT * FROM Customer WHERE customer_id = ?");
+        $custStmt->execute([$_SESSION['customer_id']]);
+        $customerInfo = $custStmt->fetch(PDO::FETCH_ASSOC);
     }
-
-    $calendar .= "</tr><tr>";
-
-    if ($dayOfWeek > 0) { 
-        $calendar .= "<td colspan='$dayOfWeek'>&nbsp;</td>"; 
-    }
-
-    $currentDay = 1;
-
-    while ($currentDay <= $numberDays) {
-        if ($dayOfWeek == 7) {
-            $dayOfWeek = 0;
-            $calendar .= "</tr><tr>";
-        }
-        
-        $currentDayRel = str_pad($currentDay, 2, "0", STR_PAD_LEFT);
-        $date = "$year-$month-$currentDayRel";
-        
-        $today = $date == $dateToday ? "today" : "";
-        $past = strtotime($date) < strtotime($dateToday) ? "past" : "";
-        
-        $calendar .= "<td class='day $today $past' data-date='$date'>";
-        $calendar .= $currentDay;
-        $calendar .= "</td>";
-        
-        $currentDay++;
-        $dayOfWeek++;
-    }
-
-    if ($dayOfWeek != 7) { 
-        $remainingDays = 7 - $dayOfWeek;
-        $calendar .= "<td colspan='$remainingDays'>&nbsp;</td>"; 
-    }
-
-    $calendar .= "</tr>";
-    $calendar .= "</table>";
-
-    return $calendar;
+} catch (PDOException $e) {
+    die("Database error: " . $e->getMessage());
 }
 
-function outputBookingCalendar() {
-    $month = date('m');
-    $year = date('Y');
-    echo generateCalendar($month, $year);
-}
+// Generate a unique transaction number
+$transactionNo = 'TRX'.time().rand(1000, 9999);
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -124,7 +97,7 @@ function outputBookingCalendar() {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Your custom JavaScript -->
-    <script src="booking.js" defer></script>
+    <script src="booking.js"></script>
 
 
 </head>
@@ -269,43 +242,154 @@ function outputBookingCalendar() {
                             <div class="pets"><b>Pet/s</b></div>
 
                             <table class="table">
-                                <thead>
-                                    <tr>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Breed</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Size</th>
+            <th>Price</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="petTableBody">
+        <tr>
+            <!-- Dropdown inside the Name column -->
+            <td data-label="Name">
+                <select class="petSelect" onchange="updatePetDetails(this)">
+                    <option value="">Choose Pet</option>
+                    <?php foreach ($pets as $pet): ?>
+                        <option value="<?= htmlspecialchars(json_encode([
+                            'pet_breed' => $pet['pet_breed'],
+                            'pet_age' => $pet['pet_age'],
+                            'pet_gender' => $pet['pet_gender'],
+                            'pet_size' => $pet['pet_size'],
+                            'pet_price' => isset($pet['pet_price']) ? $pet['pet_price'] : '₱0.00'
+                        ]), ENT_QUOTES, 'UTF-8') ?>">
+                            <?= htmlspecialchars($pet['pet_name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+            <td data-label="Breed"></td>
+            <td data-label="Age"></td>
+            <td data-label="Gender"></td>
+            <td data-label="Size"></td>
+            <td data-label="Price">₱0.00</td>
+            <td><button type="button" onclick="addPetRow()">+</button></td>
+        </tr>
+    </tbody>
+</table>
 
-                                        <th>NAME</th>
-                                        <th>BREED</th>
-                                        <th>AGE</th>
-                                        <th>GENDER</th>
-                                        <th>SIZE</th>
-                                        <th>PRICE</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    // Sample pet data array
-                                    $pets = [
-                                        ['name' => 'Max', 'breed' => 'Golden Retriever', 'age' => '4 years', 'gender' => 'Male', 'size' => 'Large', 'price' => '₱3500.00'],
-                                        ['name' => 'Luna', 'breed' => 'Poodle', 'age' => '1.5 years', 'gender' => 'Female', 'size' => 'Medium', 'price' => '₱2500.00'],
-                                        ['name' => 'Buddy', 'breed' => 'Labrador', 'age' => '3 years', 'gender' => 'Male', 'size' => 'Large', 'price' => '₱3000.00'],
-                                        ['name' => 'Daisy', 'breed' => 'Beagle', 'age' => '2 years', 'gender' => 'Female', 'size' => 'Small', 'price' => '₱2000.00'],
-                                        ['name' => 'Rocky', 'breed' => 'Bulldog', 'age' => '5 years', 'gender' => 'Male', 'size' => 'Medium', 'price' => '₱4000.00'],
-                                    ];
+<script>
+    function updatePetDetails(selectElement) {
+        let selectedPet = selectElement.value ? JSON.parse(selectElement.value) : null;
+        let row = selectElement.closest("tr");
 
-                                    // Generate table rows
-                                    foreach ($pets as $pet) {
-                                        echo "<tr>";
+        row.querySelector("[data-label='Breed']").textContent = selectedPet ? selectedPet.pet_breed : "";
+        row.querySelector("[data-label='Age']").textContent = selectedPet ? selectedPet.pet_age + " years" : "";
+        row.querySelector("[data-label='Gender']").textContent = selectedPet ? selectedPet.pet_gender : "";
+        row.querySelector("[data-label='Size']").textContent = selectedPet ? selectedPet.pet_size : "";
+        
+        // Set price based on pet size
+        let price = "₱0.00";
+        if (selectedPet) {
+            switch(selectedPet.pet_size) {
+                case 'Cat':
+                    price = "₱500.00";
+                    break;
+                case 'Small':
+                    price = "₱700.00";
+                    break;
+                case 'Medium':
+                    price = "₱800.00";
+                    break;
+                case 'Large':
+                case 'XL':
+                case 'XXL':
+                    price = "₱900.00";
+                    break;
+            }
+        }
+        row.querySelector("[data-label='Price']").textContent = price;
+        
+        // Update total price
+        calculateTotalPrice();
+    }
 
-                                        echo "<td data-label='Name'>{$pet['name']}</td>";
-                                        echo "<td data-label='Breed'>{$pet['breed']}</td>";
-                                        echo "<td data-label='Age'>{$pet['age']}</td>";
-                                        echo "<td data-label='Gender'>{$pet['gender']}</td>";
-                                        echo "<td data-label='Size'>{$pet['size']}</td>";
-                                        echo "<td data-label='Price'>{$pet['price']}</td>";
-                                        echo "</tr>";
-                                    }
-                                    ?>
-                                </tbody>
-                            </table>
+    function addPetRow() {
+        let tableBody = document.getElementById("petTableBody");
+        let newRow = document.createElement("tr");
+
+        newRow.innerHTML = `
+            <td data-label="Name">
+                <select class="petSelect" onchange="updatePetDetails(this)">
+                    <option value="">Choose Pet</option>
+                    <?php foreach ($pets as $pet): ?>
+                        <option value="<?= htmlspecialchars(json_encode([
+                            'pet_breed' => $pet['pet_breed'],
+                            'pet_age' => $pet['pet_age'],
+                            'pet_gender' => $pet['pet_gender'],
+                            'pet_size' => $pet['pet_size'],
+                            'pet_price' => isset($pet['pet_price']) ? $pet['pet_price'] : '₱0.00'
+                        ]), ENT_QUOTES, 'UTF-8') ?>">
+                            <?= htmlspecialchars($pet['pet_name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+            <td data-label="Breed"></td>
+            <td data-label="Age"></td>
+            <td data-label="Gender"></td>
+            <td data-label="Size"></td>
+            <td data-label="Price">₱0.00</td>
+            <td><button type="button" onclick="removePetRow(this)">-</button></td>
+        `;
+
+        tableBody.appendChild(newRow);
+    }
+
+    function removePetRow(button) {
+        let row = button.closest("tr");
+        row.remove();
+        
+        // Update total price after removing a pet
+        calculateTotalPrice();
+    }
+    
+    function calculateTotalPrice() {
+    // Get all price cells
+    let priceCells = document.querySelectorAll("[data-label='Price']");
+    let total = 0;
+    
+    // Sum up all prices
+    priceCells.forEach(cell => {
+        let priceText = cell.textContent.replace('₱', '').replace(',', '');
+        let price = parseFloat(priceText);
+        if (!isNaN(price)) {
+            total += price;
+        }
+    });
+    
+    // Format the total with two decimal places
+    const formattedTotal = total.toFixed(2);
+    
+    // Set total in the payment modal
+    let totalElement = document.getElementById("summaryTotalAmount");
+    if (totalElement) {
+        totalElement.textContent = "₱ " + formattedTotal;
+    }
+    
+    // Set remaining balance (same as total for now)
+    let balanceElement = document.getElementById("summaryRemainingBalance");
+    if (balanceElement) {
+        balanceElement.textContent = "₱ " + formattedTotal;
+    }
+    
+    return total;
+}
+</script>
 
                             <div class="lower-section">
                                 <button type="button" class="btn" id="regPet" data-bs-toggle="modal" data-bs-target="#petRegistrationModal">
@@ -444,71 +528,77 @@ function outputBookingCalendar() {
 
                                     <!-- Payment Modal -->
                                     <div class="modal fade" id="petPaymentModal" tabindex="-1" aria-labelledby="petPaymentModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-lg">
-                                            <div class="modal-content">
-                                                <div class="modal-body p-0">
-                                                    <div class="payment-modal-content">
-                                                        <h1>Let's Seal the Deal!</h1>
-                                                        <p class="subtitle">To finalize your pet's stay, please scan the QR code below to securely process your payment.</p>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <div class="payment-modal-content">
+                    <h1>Let's Seal the Deal!</h1>
+                    <p class="subtitle">To finalize your pet's stay, please scan the QR code below to securely process your payment.</p>
 
-                                                        <div class="modal-grid">
-                                                            <div class="details-section">
-                                                                <p class="transaction-no">Transaction No. 4565789</p>
-                                                                <h2 class="pet-name">Good Boi</h2>
-                                                                <p class="dates">October 5, 12:00 NN - 6:00 PM</p>
+                    <div class="modal-grid">
+                        <div class="details-section">
+                            <p class="transaction-no">Transaction No. <?php echo $transactionNo; ?></p>
+                            <h2 class="pet-name" id="summaryPetName">Good Boi</h2>
+                            <div class="booking-dates">
+                                <p><strong>Check in:</strong> <span id="summaryCheckIn">October 5, 12:00 PM</span></p>
+                                <p><strong>Check out:</strong> <span id="summaryCheckOut">October 5, 6:00 PM</span></p>
+                            </div>
 
-                                                                <div class="info-grid">
-                                                                    <div class="info-row"><span class="label">Service:</span><span class="value">Pet Daycare</span></div>
-                                                                    <div class="info-row"><span class="label">Breed:</span><span class="value">Shih Tzu</span></div>
-                                                                    <div class="info-row"><span class="label">Gender:</span><span class="value">Male</span></div>
-                                                                    <div class="info-row"><span class="label">Age:</span><span class="value">7 years old</span></div>
-                                                                    <div class="info-row"><span class="label">Owner:</span><span class="value">Jude Emmanuel Flores</span></div>
-                                                                    <div class="info-row"><span class="label">Amount to pay:</span><span class="value">₱ 250.00</span></div>
-                                                                    <div class="info-row"><span class="label">Remaining Balance:</span><span class="value">₱ 250.00</span></div>
-                                                                </div>
+                            <div class="info-grid">
+                                <div class="info-row"><span class="label">Service:</span><span class="value">Pet Hotel</span></div>
+                                <div id="petSummaryDetails">
+                                    <!-- Pet details will be inserted here dynamically -->
+                                    <div class="info-row"><span class="label">Breed:</span><span class="value" id="summaryBreed">Shih Tzu</span></div>
+                                    <div class="info-row"><span class="label">Gender:</span><span class="value" id="summaryGender">Male</span></div>
+                                    <div class="info-row"><span class="label">Age:</span><span class="value" id="summaryAge">7 years old</span></div>
+                                </div>
+                                <div class="info-row"><span class="label">Owner:</span><span class="value">
+                                    <?php echo isset($customerInfo) ? htmlspecialchars($customerInfo['customer_first_name'] . ' ' . $customerInfo['customer_last_name']) : 'Jude Emmanuel Flores'; ?>
+                                </span></div>
+                                <div class="info-row"><span class="label">Amount to pay:</span><span class="value" id="summaryTotalAmount">₱ 0.00</span></div>
+                                <div class="info-row"><span class="label">Remaining Balance:</span><span class="value" id="summaryRemainingBalance">₱ 0.00</span></div>
+                            </div>
 
-                                                                <form method="POST" enctype="multipart/form-data">
-                                                                    <div class="payment-section">
-                                                                        <p class="section-label">Mode of Payment</p>
-                                                                        <div class="radio-group">
-                                                                            <label><input type="radio" name="payment_method" value="Maya" checked> <span>Maya</span></label>
-                                                                            <label><input type="radio" name="payment_method" value="GCash"> <span>GCash</span></label>
-                                                                        </div>
-
-                                                                        <p class="section-label">Reference No. of Your Payment</p>
-                                                                        <input type="text" name="reference_no" placeholder="Enter Reference Number" class="reference-input" required>
-
-                                                                        <p class="section-label">Proof of Payment</p>
-                                                                        <input type="file" name="payment_proof" accept="image/*" required>
-                                                                    </div>
-
-
-                                                                </form>
-                                                            </div>
-
-                                                            <div class="qr-section">
-                                                                <div class="qr-codes">
-                                                                    <img src="gcash.png" alt="GCash QR Code" class="qr-code">
-                                                                    <img src="maya.png" alt="Maya QR Code" class="qr-code">
-                                                                </div>
-                                                                <p class="qr-instruction">We accept bank transfer to our GCash/Maya account or just scan the QR Code!</p>
-                                                                <div class="account-info">
-                                                                    <p>Account Number: <span>987654321</span></p>
-                                                                    <p>Account Name: <span>Veatrice Delos Santos</span></p>
-                                                                </div>
-                                                                <button type="button" class="action-btn" style="margin-bottom: 100px;"
-                                                                    data-bs-dismiss="modal"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#waiverForm">
-                                                                    Complete Booking
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                            <form method="POST" enctype="multipart/form-data" id="paymentForm">
+                                <div class="payment-section">
+                                    <p class="section-label">Mode of Payment</p>
+                                    <div class="radio-group">
+                                        <label><input type="radio" name="payment_method" value="Maya" checked> <span>Maya</span></label>
+                                        <label><input type="radio" name="payment_method" value="GCash"> <span>GCash</span></label>
                                     </div>
+
+                                    <p class="section-label">Reference No. of Your Payment</p>
+                                    <input type="text" name="reference_no" placeholder="Enter Reference Number" class="reference-input" required>
+
+                                    <p class="section-label">Proof of Payment</p>
+                                    <input type="file" name="payment_proof" accept="image/*" required>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="qr-section">
+                            <div class="qr-codes">
+                                <img src="gcash.png" alt="GCash QR Code" class="qr-code" id="gcashQR" style="display: none;">
+                                <img src="maya.png" alt="Maya QR Code" class="qr-code" id="mayaQR">
+                            </div>
+                            <p class="qr-instruction">We accept bank transfer to our GCash/Maya account or just scan the QR Code!</p>
+                            <div class="account-info">
+                                <p>Account Number: <span>987654321</span></p>
+                                <p>Account Name: <span>Veatrice Delos Santos</span></p>
+                            </div>
+                            <button type="button" class="action-btn" id="proceed-to-waiver" style="margin-bottom: 100px;"
+                                data-bs-dismiss="modal"
+                                data-bs-toggle="modal"
+                                data-bs-target="#waiverForm" disabled>
+                                Complete Booking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
                                     <div class="modal fade" id="waiverForm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-xl modal-dialog-scrollable">
                                             <div class="modal-content">
@@ -519,7 +609,7 @@ function outputBookingCalendar() {
                                                 <div class="modal-body" id="waiverForm-body">
 
                                                     <p>
-                                                        We care about the safety and wellbeing of all pets. We want to assure you that we will make every effort to make your pet’s stay with us as pleasant as possible.
+                                                        We care about the safety and wellbeing of all pets. We want to assure you that we will make every effort to make your pet's stay with us as pleasant as possible.
                                                         While we provide the best care for your fur babies, there are possible risks that come with availing of pet boarding services.
                                                     </p>
 
@@ -576,13 +666,14 @@ function outputBookingCalendar() {
                                                         <li>The Owner understands that it is possible for us to discover a pet's illness during their stay with us such as arthritis, cysts,
                                                             cancer or any health problems old age brings for senior dogs.</li>
 
-                                                        These conditions take time to develop and could be discovered during their stay.
+                                                        These conditions take time to develop and could be discovered during their stay.</li>
+
                                                         In that case, we will notify you immediately if something feels off with your pet and we would take them to the vet to get a diagnosis and proper treatment,
                                                         costs shall be shouldered by the owner. We understand how stressful and worrisome this is if this may happen to your pet.
                                                         Rest assured we will give them the care they need and provide the best comfort for them as much as possible. We will send you daily updates, vet's advice and etc.
 
                                                         <li>
-                                                            Your pet’s safety and well being is our absolute #1 priority.
+                                                            Your pet's safety and well being is our absolute #1 priority.
                                                         </li>
 
                                                         <li>
@@ -611,12 +702,12 @@ function outputBookingCalendar() {
                                                     </p>
 
                                                     <p>
-                                                        <input type="checkbox" id="waiverForm-checkbox" name="agree" value="1" required>
-                                                        I hereby grant Adorafur Happy Stay  and its care takers permission to board and care for my pet
+                                                        <input type="checkbox" id="waiverForm-checkbox1" name="agree" value="1" required>
+                                                        I hereby grant Adorafur Happy Stay  and its care takers permission to board and care for my pet
                                                     </p>
                                                     <p>
-                                                        <input type="checkbox" id="waiverForm-checkbox" name="agree" value="1" required>
-                                                        I have read and agree with the  Liability Release and Waiver Form
+                                                        <input type="checkbox" id="waiverForm-checkbox2" name="agree" value="1" required>
+                                                        I have read and agree with the  Liability Release and Waiver Form
                                                     </p>
                                                 </div>
 
@@ -832,6 +923,365 @@ function outputBookingCalendar() {
                 <?php endif; ?>
             });
             </script>
-</body>
 
+            <script>
+                    $("#complete-booking").click(function() {
+                    // Debug: Log the state of checkboxes
+                    console.log("Checkbox 1 state:", $("#waiverForm-checkbox1").is(":checked"));
+                    console.log("Checkbox 2 state:", $("#waiverForm-checkbox2").is(":checked"));
+
+                    // Check if waiver checkboxes are checked
+                    if (!$("#waiverForm-checkbox1").prop("checked") || !$("#waiverForm-checkbox2").prop("checked")) {
+                        alert("You must agree to the terms and conditions to complete your booking.");
+                        return;
+                    }
+                    
+                    // Show processing notification
+                    alert("Your booking is being processed. Please wait...");
+                    
+                    // Disable the button to prevent multiple submissions
+                    $(this).prop('disabled', true).text('Processing...');
+                    
+                    // Get the payment form
+                    var paymentForm = $("#petPaymentModal form");
+                    var formData = new FormData(paymentForm[0]);
+                    
+                    $.ajax({
+                        type: "POST",
+                        url: "book-pet-daycare.php",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                alert("Booking completed successfully!");
+                                $("#waiverForm").modal("hide");
+                                // Redirect to confirmation page or update UI
+                                window.location.href = "booking-confirmation.php";
+                            } else {
+                                alert("Error: " + response.error);
+                                // Re-enable the button if there's an error
+                                $("#complete-booking").prop('disabled', false).text('Complete Booking');
+                            }
+                        },
+                        error: function() {
+                            alert("An error occurred while processing your payment.");
+                            // Re-enable the button if there's an error
+                            $("#complete-booking").prop('disabled', false).text('Complete Booking');
+                        }
+                    });
+                });
+            </script>
+
+<script>
+    $(document).ready(function () {
+        <?php if ($petSelected): ?>
+            $(".calendar").removeClass("disabled-section");
+        <?php endif; ?>
+
+        <?php if ($dateSelected): ?>
+            $(".checkin-out").removeClass("disabled-section");
+        <?php endif; ?>
+
+        <?php if ($timeSelected): ?>
+            $(".book").removeClass("disabled-section");
+        <?php endif; ?>
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Store booking data globally
+        let bookingData = {
+            pets: [], // Array to store multiple pets
+            checkInDate: "",
+            checkInTime: "",
+            checkOutDate: "",
+            checkOutTime: ""
+        };
+
+        // Function to update the booking summary in the payment modal
+        function updateBookingSummary() {
+            // Update pet details
+            if (bookingData.pets.length > 0) {
+                // If there's only one pet
+                if (bookingData.pets.length === 1) {
+                    const pet = bookingData.pets[0];
+                    $('#summaryPetName').text(pet.name);
+                    
+                    // Update the pet details section
+                    $('#petSummaryDetails').html(`
+                        <div class="info-row"><span class="label">Breed:</span><span class="value">${pet.breed}</span></div>
+                        <div class="info-row"><span class="label">Gender:</span><span class="value">${pet.gender}</span></div>
+                        <div class="info-row"><span class="label">Age:</span><span class="value">${pet.age} years old</span></div>
+                    `);
+                } 
+                // If there are multiple pets
+                else {
+                    // Update the pet name to show count
+                    $('#summaryPetName').text(`${bookingData.pets.length} Pets`);
+                    
+                    // Create a list of all pets with their details
+                    let petDetailsHtml = '';
+                    bookingData.pets.forEach((pet, index) => {
+                        petDetailsHtml += `
+                            <div class="pet-summary-item">
+                                <h4>${pet.name}</h4>
+                                <div class="info-row"><span class="label">Breed:</span><span class="value">${pet.breed}</span></div>
+                                <div class="info-row"><span class="label">Gender:</span><span class="value">${pet.gender}</span></div>
+                                <div class="info-row"><span class="label">Age:</span><span class="value">${pet.age} years old</span></div>
+                                ${index < bookingData.pets.length - 1 ? '<hr>' : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    // Update the pet details section
+                    $('#petSummaryDetails').html(petDetailsHtml);
+                }
+            }
+
+            // Update dates if available
+            if (bookingData.checkInDate && bookingData.checkInTime) {
+                $('#summaryCheckIn').text(`${bookingData.checkInDate}, ${bookingData.checkInTime}`);
+            } else {
+                // Set default values if not available
+                if (!$('#summaryCheckIn').text()) {
+                    $('#summaryCheckIn').text("Not selected");
+                }
+            }
+            
+            if (bookingData.checkOutDate && bookingData.checkOutTime) {
+                $('#summaryCheckOut').text(`${bookingData.checkOutDate}, ${bookingData.checkOutTime}`);
+            } else {
+                // Set default values if not available
+                if (!$('#summaryCheckOut').text()) {
+                    $('#summaryCheckOut').text("Not selected");
+                }
+            }
+            
+            // Update total price
+            calculateTotalPrice();
+        }
+
+        // Update pet details when a pet is selected from dropdown
+        $(document).on('change', '.petSelect', function() {
+            const selectedOption = $(this).find('option:selected');
+            const petName = selectedOption.text();
+            
+            if (petName && petName !== "Choose Pet") {
+                // Get pet details from the JSON
+                const petDetails = JSON.parse($(this).val());
+                
+                // Create pet object
+                const pet = {
+                    name: petName,
+                    breed: petDetails.pet_breed,
+                    gender: petDetails.pet_gender,
+                    age: petDetails.pet_age
+                };
+                
+                // Check if this pet is already in the array
+                const existingPetIndex = bookingData.pets.findIndex(p => p.name === petName);
+                
+                if (existingPetIndex >= 0) {
+                    // Update existing pet
+                    bookingData.pets[existingPetIndex] = pet;
+                } else {
+                    // Add new pet
+                    bookingData.pets.push(pet);
+                }
+                
+                // Update summary
+                updateBookingSummary();
+            }
+        });
+
+        // Remove pet from booking data when row is removed
+        window.removePetRow = function(button) {
+            const row = button.closest("tr");
+            const petSelect = row.querySelector(".petSelect");
+            const petName = petSelect.options[petSelect.selectedIndex].text;
+            
+            // Remove pet from bookingData.pets array
+            bookingData.pets = bookingData.pets.filter(pet => pet.name !== petName);
+            
+            // Remove the row from the DOM
+            row.remove();
+            
+            // Update total price
+            calculateTotalPrice();
+            
+            // Update summary
+            updateBookingSummary();
+        };
+
+        // Handle calendar date selection
+        $(document).on("click", ".days-grid .day:not(.disabled)", function() {
+            if ($(".calendar").hasClass("disabled-section")) return;
+
+            // Get the selected date
+            const selectedDate = $(this).data("date");
+            const formattedDate = new Date(selectedDate).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Store the date
+            bookingData.checkInDate = formattedDate;
+            
+            // If this is a range selection, store as checkout date
+            if (bookingData.checkInDate && !bookingData.checkOutDate) {
+                bookingData.checkOutDate = formattedDate = formattedDate;
+            }
+            
+            // Update summary
+            updateBookingSummary();
+        });
+
+        // Handle check-in time selection
+        $(".check-in-time").click(function() {
+            if ($(".checkin-out").hasClass("disabled-section")) return;
+
+            const selectedTime = $(this).text();
+            bookingData.checkInTime = selectedTime;
+            
+            // Update summary
+            updateBookingSummary();
+        });
+
+        // Handle check-out time selection
+        $(".check-out-time").click(function() {
+            if ($(".checkin-out").hasClass("disabled-section")) return;
+
+            const selectedTime = $(this).text();
+            bookingData.checkOutTime = selectedTime;
+            
+            // Update summary
+            updateBookingSummary();
+        });
+
+        // Initialize the payment modal when it's opened
+        $('#petPaymentModal').on('show.bs.modal', function() {
+            // Set default values for check-in and check-out if they're empty
+            if (!bookingData.checkInDate || !bookingData.checkInTime) {
+                // Try to get values from the UI
+                const checkInDate = $('.days-grid .day.selected').data('date');
+                const checkInTime = $('#checkInMenu').text();
+                
+                if (checkInDate && checkInTime && checkInTime !== "Choose Time") {
+                    const formattedDate = new Date(checkInDate).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    bookingData.checkInDate = formattedDate;
+                    bookingData.checkInTime = checkInTime;
+                } else {
+                    $('#summaryCheckIn').text("Not selected");
+                }
+            }
+            
+            if (!bookingData.checkOutDate || !bookingData.checkOutTime) {
+                // Try to get values from the UI
+                const checkOutTime = $('#checkOutMenu').text();
+                
+                if (bookingData.checkInDate && checkOutTime && checkOutTime !== "Choose Time") {
+                    bookingData.checkOutDate = bookingData.checkInDate;
+                    bookingData.checkOutTime = checkOutTime;
+                } else {
+                    $('#summaryCheckOut').text("Not selected");
+                }
+            }
+            
+            // If no pets are selected, try to get from the table
+            if (bookingData.pets.length === 0) {
+                $('.petSelect').each(function() {
+                    const select = $(this);
+                    const selectedOption = select.find('option:selected');
+                    const petName = selectedOption.text();
+                    
+                    if (petName && petName !== "Choose Pet") {
+                        try {
+                            const petDetails = JSON.parse(select.val());
+                            
+                            // Create pet object
+                            const pet = {
+                                name: petName,
+                                breed: petDetails.pet_breed,
+                                gender: petDetails.pet_gender,
+                                age: petDetails.pet_age
+                            };
+                            
+                            // Add to pets array
+                            bookingData.pets.push(pet);
+                        } catch (e) {
+                            console.error("Error parsing pet details:", e);
+                        }
+                    }
+                });
+            }
+            
+            // Update the summary with all available data
+            updateBookingSummary();
+        });
+
+        // Update summary when payment modal is opened
+        $('#petPaymentModal').on('shown.bs.modal', function() {
+            updateBookingSummary();
+        });
+
+        // Function to validate payment form
+        function validatePaymentForm() {
+            const referenceNo = $('input[name="reference_no"]').val().trim();
+            const paymentProof = $('input[name="payment_proof"]').prop('files').length;
+            
+            // Enable button only if both fields are filled
+            if (referenceNo && paymentProof > 0) {
+                $('#proceed-to-waiver').prop('disabled', false);
+            } else {
+                $('#proceed-to-waiver').prop('disabled', true);
+            }
+        }
+        
+        // Validate on input change
+        $('input[name="reference_no"]').on('input', validatePaymentForm);
+        $('input[name="payment_proof"]').on('change', validatePaymentForm);
+        
+        // Initialize validation state when modal opens
+        $('#petPaymentModal').on('shown.bs.modal', function() {
+            validatePaymentForm();
+            
+            // Show the appropriate QR code based on selected payment method
+            const selectedPayment = $('input[name="payment_method"]:checked').val();
+            if (selectedPayment === 'GCash') {
+                $('#gcashQR').show();
+                $('#mayaQR').hide();
+            } else {
+                $('#gcashQR').hide();
+                $('#mayaQR').show();
+            }
+        });
+        
+        // Reset form when modal is closed
+        $('#petPaymentModal').on('hidden.bs.modal', function() {
+            $('input[name="reference_no"]').val('');
+            $('input[name="payment_proof"]').val('');
+            $('#proceed-to-waiver').prop('disabled', true);
+        });
+        
+        // Handle payment method change
+        $('input[name="payment_method"]').change(function() {
+            if ($(this).val() === 'GCash') {
+                $('#gcashQR').show();
+                $('#mayaQR').hide();
+            } else {
+                $('#gcashQR').hide();
+                $('#mayaQR').show();
+            }
+        });
+    });
+</script>
+
+</body>
 </html>
+

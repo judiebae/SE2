@@ -1,18 +1,22 @@
 
 #header{
     z-index: 100;
-    position:fixed;
+    pointer-events: none;
     width: 100%;
 }
 
 body{
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Aligns content at the top */
+    /* justify-content: flex-start; */
     
-    min-height: 100vh;
+    /* min-height: 100vh; */
 }
-
+/* 
+.home{
+  margin-top: 154px;
+  
+} */
 
 .welcome-to-text {
     margin-top: 0px;
@@ -399,7 +403,7 @@ body{
 
 .third-section{
     position: relative;
-    background-color: #E0B09D;
+    background-color: #FAF1EA;
     height: auto;
 }
 .third-section-1 {
@@ -871,7 +875,7 @@ body{
 
 .time-sec{
     max-width: 100%;
-    margin: 0 auto;
+    
     position: relative;
     background-image: url(Home-Pics/slideshow2.png);
     padding: 5%;

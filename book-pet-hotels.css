@@ -913,3 +913,31 @@ text-transform: uppercase;
   cursor: not-allowed;
 }
 
+
+/* Add these styles to your CSS file */
+.booking-dates {
+  margin-bottom: 15px;
+}
+
+.booking-dates p {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+.pet-summary-item {
+  margin-bottom: 15px;
+}
+
+.pet-summary-item h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pet-summary-item hr {
+  margin: 15px 0;
+  border-top: 1px dashed #ddd;
+}
+
+

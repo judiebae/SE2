@@ -43,6 +43,10 @@ document.addEventListener("DOMContentLoaded", function () {
             dayElement.textContent = day;
             dayElement.classList.add("day");
             dayElement.setAttribute("data-day", day);
+            
+            // Store full date for booking purposes (YYYY-MM-DD format)
+            const fullDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            dayElement.setAttribute("data-date", fullDate);
 
             const thisDate = new Date(currentYear, currentMonth, day);
             if (thisDate < today) {
@@ -75,10 +79,16 @@ document.addEventListener("DOMContentLoaded", function () {
             endDate = null;
             resetHighlights();
             dayElement.classList.add("selected-date");
+            
+            // Update the summary in the payment modal
+            updateBookingSummary();
         } else if (day > startDate) {
             // Set endDate and highlight range
             endDate = day;
             highlightDateRange();
+            
+            // Update the summary in the payment modal
+            updateBookingSummary();
         }
     }
 
@@ -116,6 +126,35 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+    
+    function updateBookingSummary() {
+        // First check if elements exist
+        const summaryDates = document.getElementById("summaryDates");
+        if (!summaryDates) return;
+        
+        // Get check-in and check-out times
+        const checkInTime = document.getElementById("checkInMenu").textContent.trim();
+        const checkOutTime = document.getElementById("checkOutMenu").textContent.trim();
+        
+        if (checkInTime === "Choose Time" || checkOutTime === "Choose Time") return;
+        
+        // Format the dates for display
+        const startMonth = months[currentDate.getMonth()];
+        const endMonth = months[currentDate.getMonth()]; // Same month for simplicity
+        
+        // Create formatted date string
+        let dateString = "";
+        if (startDate && !endDate) {
+            dateString = `${startMonth} ${startDate}, ${checkInTime} - ${checkOutTime}`;
+        } else if (startDate && endDate) {
+            dateString = `${startMonth} ${startDate} - ${endMonth} ${endDate}, ${checkInTime} - ${checkOutTime}`;
+        }
+        
+        // Update the summary text
+        if (dateString) {
+            summaryDates.textContent = dateString;
+        }
+    }
 
     // Change months
     prevMonthBtn.addEventListener("click", () => {
@@ -127,7 +166,87 @@ document.addEventListener("DOMContentLoaded", function () {
         currentDate.setMonth(currentDate.getMonth() + 1);
         renderCalendar();
     });
+    
+    // Update booking summary when a pet is selected
+    document.addEventListener("petSelected", function(e) {
+        const summaryPetName = document.getElementById("summaryPetName");
+        const summaryBreed = document.getElementById("summaryBreed");
+        const summaryGender = document.getElementById("summaryGender");
+        const summaryAge = document.getElementById("summaryAge");
+        
+        if (summaryPetName && e.detail.name) {
+            summaryPetName.textContent = e.detail.name;
+        }
+        
+        if (summaryBreed && e.detail.breed) {
+            summaryBreed.textContent = e.detail.breed;
+        }
+        
+        if (summaryGender && e.detail.gender) {
+            summaryGender.textContent = e.detail.gender;
+        }
+        
+        if (summaryAge && e.detail.age) {
+            summaryAge.textContent = e.detail.age + " years old";
+        }
+    });
+    
+    // Listen for payment method changes
+    document.addEventListener('change', function(e) {
+        // If the changed element is a payment method radio button
+        if (e.target.name === 'payment_method') {
+            // Show the appropriate QR code
+            const gcashQR = document.getElementById('gcashQR');
+            const mayaQR = document.getElementById('mayaQR');
+            
+            if (gcashQR && mayaQR) {
+                if (e.target.value === 'GCash') {
+                    gcashQR.style.display = 'block';
+                    mayaQR.style.display = 'none';
+                } else if (e.target.value === 'Maya') {
+                    gcashQR.style.display = 'none';
+                    mayaQR.style.display = 'block';
+                }
+            }
+        }
+    });
 
     // Initial render
     renderCalendar();
+    
+    // Initial state for QR codes (show Maya by default)
+    const gcashQR = document.getElementById('gcashQR');
+    const mayaQR = document.getElementById('mayaQR');
+    if (gcashQR && mayaQR) {
+        gcashQR.style.display = 'none';
+        mayaQR.style.display = 'block';
+    }
+    
+    // Trigger pet selection event when a pet is chosen from dropdown
+    // Declare $ if it's not already in scope
+    const $ = jQuery;
+
+    $(document).on('change', '.petSelect', function() {
+        const selectedOption = $(this).find('option:selected');
+        const petName = selectedOption.text();
+        
+        if (petName && petName !== "Choose Pet") {
+            // Get pet details from the JSON
+            const petDetails = JSON.parse($(this).val());
+            
+            // Create a custom event with pet details
+            const event = new CustomEvent('petSelected', {
+                detail: {
+                    name: petName,
+                    breed: petDetails.pet_breed,
+                    gender: petDetails.pet_gender,
+                    age: petDetails.pet_age
+                }
+            });
+            
+            // Dispatch the event
+            document.dispatchEvent(event);
+        }
+    });
 });
+
