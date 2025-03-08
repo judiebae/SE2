@@ -74,7 +74,8 @@
                 c.c_id, 
                 CONCAT(c.c_first_name, ' ', c.c_last_name) AS owner_name,
                 GROUP_CONCAT(p.pet_name SEPARATOR ', ') AS pet_names,
-                c.c_membership_status as membership_status
+                c.c_membership_status as membership_status,
+                p.*
                 FROM customer c
                 LEFT JOIN 
                   pet p ON c.c_id = p.customer_id
@@ -93,8 +94,8 @@
           echo "<td class='pets-name'>". htmlspecialchars($row["pet_names"] ?? 'No pets') ."</td>";
           echo "<td class='mem-status'>". htmlspecialchars($row["membership_status"] ?? 'None') . "</td>";
           echo "<td class='dates'>";
-          echo "<strong>Registered Date:</strong>". ($row["registration_date"] ? date('m/d/Y', strtotime($row["registration_date"])) : 'N/A') ."<br>";
-          echo "<strong>Expiry Date:</strong>" . ($row["expiry_date"] ? date('m/d/Y', strtotime($row["expiry_date"])) : 'N/A');
+          echo "<strong>Registered Date:</strong>". ($row["pet_vaccination_date_administered"] ? date('m/d/Y', strtotime($row["pet_vaccination_date_administered"])) : 'N/A') ."<br>";
+          echo "<strong>Expiry Date:</strong>" . ($row["pet_vaccination_date_expiry"] ? date('m/d/Y', strtotime($row["pet_vaccination_date_expiry"])) : 'N/A');
           echo "</td>";
           echo "</tr>";
         }

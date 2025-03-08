@@ -94,17 +94,17 @@
             <div id="learnm" class="inclusAndPerks2">
                 <div class="inclusions">
                     <div class="inclu-img">
-                        <img src="meow.png" alt="" class="meow">
+                        <img src="Home-Pics/meow.png" alt="" class="meow">
                     </div>
                     <div class="inclu-text">
                         <h6 class="inclus"> INCLUSIONS </h6>
                         <div class="inclu1">
                             <div class="inclu1-1">
-                                <img src="Inclusions-and-Perks/daily_video_icon.png" alt="">
+                                <img src="Home-Pics/daily_video_icon.png" alt="">
                                 <p>Daily video and photo updates</p>
                             </div>
                             <div class="inclu1-2">
-                                <img src="Inclusions-and-Perks/ac_icon.png" alt="">
+                                <img src="Home-Pics/ac_icon.png" alt="">
                                 <p>Airconditioned facility</p>
                             </div>
                         </div>

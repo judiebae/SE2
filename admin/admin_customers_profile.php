@@ -164,7 +164,7 @@ if (empty($transactions)) {
     <img class="adorafur-logo" src="admin-pics/adorafur-logo.png" alt="Adorafur Logo" />
       <div class="nav-container">
 
-          <div class="home-button">ss
+          <div class="home-button">
             <a href="admin_home.php" class="home-text">Home</a>
           </div>
 
