@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin_navbar.css">
+    <link rel="stylesheet" href="admin-css/admin_header2.css">
+    <link rel="stylesheet" href="admin-css/admin_bookings.css">
     <title>Admin Bookings</title>
 </head> 
 
 <body>
     <!-- NAVIGATION BAR -->
     <nav class="nav-bar">
-    <img class="adorafur-logo" src="adorafur-logo.png" alt="Adorafur Logo" />
+    <img class="adorafur-logo" src="admin-pics/adorafur-logo.png" alt="Adorafur Logo" />
       <div class="nav-container">
 
           <div class="home-button">
@@ -47,16 +48,25 @@
 
       <!-- HEADER -->
       <div class="header-img-container">
+      <button id="notificationButton">
+                <img class="notifications" src="admin-pics/notification-bell.png" alt="Notifications" />
+            </button>
       </div>
 
     </nav>
 
     <!-- BOOKINGS PANEL-->
     <div class="panel-container">
-      <div class="admin-panel-text">Bookings</div>
-      <div class="time-text" id="real-time-clock">Loading...</div>
-      <div class="line-1"></div>
 
+      <div class="head">
+        <div class="head-text">Bookings</div>
+        <div class="time-text" id="real-time-clock">Loading...</div>
+      </div>
+      
+      <div class="content">
+
+
+      
 
     <!-- CALENDAR -->
       <div class="bookings-weekly">
@@ -67,7 +77,7 @@
         </div>
 
         <div class="calendar" id="calendar"></div>
-      </div>
+        </div>
 
 
     <!-- SIDE BAR-->
@@ -152,7 +162,7 @@
           <div class="view-task" id="viewTasksBtn">View Tasks</div>
         </div>
       </div>
-
+      </div>
     </div>
     <script src="admin.js"></script>
 </body>

@@ -1,25 +1,25 @@
 <?php
 
-
 include("../connect.php");
-
 
 $sql = "SELECT
             b.booking_id AS b_id,
             p.pet_name AS p_pet,
             p.pet_breed AS p_breed,
             p.pet_size AS p_size,
-            CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS owner_name,
-            c.customer_contact_number AS owner_num,
             s.service_name AS s_service,
-            pay.payment_status AS pay_status,
+            CONCAT(c.c_first_name, ' ', c.c_last_name) AS owner_name,
+            c.c_contact_number AS owner_num,
+            pay.pay_status AS pay_status,
+            pay.pay_method AS pay_mop,
+            pay.pay_reference_number AS pay_reference_number,
             DATE(b.booking_check_in) AS b_in,
             DATE(b.booking_check_out) AS b_out
-        FROM booking b
+        FROM bookings b
         JOIN pet p ON b.pet_id = p.pet_id
-        JOIN customer c ON p.customer_id = c.customer_id
+        JOIN customer c ON p.customer_id = c.c_id
         JOIN service s ON b.service_id = s.service_id
-        JOIN payment pay ON b.payment_id = pay.payment_id
+        JOIN payment pay ON b.payment_id = pay.pay_id
         WHERE b.booking_status <> 'Cancelled'
         ORDER BY
             CASE
@@ -27,7 +27,6 @@ $sql = "SELECT
                 ELSE 2  -- Past bookings last
             END,
             b.booking_check_in ASC;";
-
 
 try {
     $stmt = $conn->prepare($sql);  // Prepare the query
@@ -37,45 +36,41 @@ try {
     echo "Error: " . $e->getMessage();
 }
 
-
-// Remove this part as we'll fetch booking data dynamically
-// $booking_id = $_GET['booking_id'];
-// $sql1 = "...";
-// $stmt = $conn->prepare($sql1);
-// $stmt->bind_param('s', $booking_id);
-// $stmt->execute();
-// $result = $stmt->get_result();
-// $bookingData = $result->fetch_assoc();
-// $stmt->close();
-
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin_navbars.css">
-    <link rel="stylesheet" href="ad_home.css">
-
+    <link rel="stylesheet" href="admin-css/admin_header2.css">
+    <link rel="stylesheet" href="admin-css/ad_home.css">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
+    <script src="admin.js"></script>
 
     <title>Admin Homepage</title>
+
+    <script>
+    function toggleOtherPaymentMode() {
+        var paymentMode = document.getElementById("paymentModeAdd").value;
+        var otherInput = document.getElementById("otherPaymentMode");
+        if (paymentMode === "others") {
+            otherInput.classList.remove("d-none");
+        } else {
+            otherInput.classList.add("d-none");
+            otherInput.value = ""; // Clear input when not needed
+        }
+    }
+</script>
    
 </head>
 
-
-<body>
+<body style="background-color: #eee;">
     <!-- NAVIGATION BAR -->
     <nav class="nav-bar">
-        <img class="adorafur-logo" src="adorafur-logo.png" alt="Adorafur Logo" />
+        <img class="adorafur-logo" src="admin-pics/adorafur-logo.png" alt="Adorafur Logo" />
         <div class="nav-container">
             <div class="home-button active">
                 <a href="admin_home.php" class="home-text">Home</a>
@@ -93,19 +88,15 @@ try {
         <!-- HEADER -->
         <div class="header-img-container">
             <button id="notificationButton">
-                <img class="notifications" src="notification-bell.png" alt="Notifications" />
+                <img class="notifications" src="admin-pics/notification-bell.png" alt="Notifications" />
             </button>
         </div>
-
-
     </nav>
 
-
-   
     <!-- HOME PAGE -->
     <div class="panel-container">
         <div class="head">
-            <h6  class="admin-panel-text">Admin Panel</h6>
+            <h6  class="head-text">Admin Panel</h6>
             <!-- Real-time clock -->
             <div class="time-text" id="real-time-clock">Loading...</div>
            
@@ -129,10 +120,8 @@ try {
                 <tbody class="deets">
                 ';
 
-
                 foreach ($reservations as $fetch_reservations) {
             ?>
-           
                 <tr class="row1">
                    
                     <td class="deets-id <?php echo strtolower($fetch_reservations['s_service']) === 'pet hotel' ? 'row-hotel' : 'row-daycare'; ?>">
@@ -146,8 +135,11 @@ try {
                         data-service="<?php echo htmlspecialchars($fetch_reservations['s_service']); ?>"
                         data-check-in="<?php echo htmlspecialchars($fetch_reservations['b_in']); ?>"
                         data-check-out="<?php echo htmlspecialchars($fetch_reservations['b_out']); ?>"
-                        data-payment-status="<?php echo htmlspecialchars($fetch_reservations['pay_status']); ?>">
-                            <?php echo htmlspecialchars($fetch_reservations['b_id']); ?>
+                        data-payment-status="<?php echo htmlspecialchars($fetch_reservations['pay_status']); ?>"
+                        data-mop="<?php echo htmlspecialchars($fetch_reservations['pay_mop'])?>"
+                        data-reference-number="<?php echo htmlspecialchars($fetch_reservations['pay_reference_number'])?>"
+
+                           <strong> <?php echo htmlspecialchars($fetch_reservations['b_id']); ?> </strong>
                         </button>
                     </td>
                    
@@ -214,31 +206,31 @@ try {
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Owner Name:</label>
-                                <input type="text" class="form-control" name="ownerName" id="ownerName">
+                                <input type="text" class="form-control" name="ownerName" id="ownerName" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Contact:</label>
-                                <input type="text" class="form-control" name="contact" id="contact">
+                                <input type="text" class="form-control" name="contact" id="contact" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Pet Name:</label>
-                                <input type="text" class="form-control" name="petName" id="petName">
+                                <input type="text" class="form-control" name="petName" id="petName" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Pet Type:</label>
-                                <input type="text" class="form-control" name="petType" id="petType">
+                                <input type="text" class="form-control" name="petType" id="petType" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Pet Breed:</label>
-                                <input type="text" class="form-control" name="petBreed" id="petBreed">
+                                <input type="text" class="form-control" name="petBreed" id="petBreed" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Service:</label>
-                                <input type="text" class="form-control" name="service" id="service">
+                                <input type="text" class="form-control" name="service" id="service" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Check-in:</label>
-                                <input type="text" class="form-control" name="checkIn" id="checkIn">
+                                <input type="text" class="form-control" name="checkIn" id="checkIn" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Check-out:</label>
@@ -276,25 +268,32 @@ try {
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label class="form-label fw-bold text-brown mb-2">Amount Paid:</label>
-                                                        <input type="text" class="form-control" name="amountPaid" value="PHP 200.00" id="amountPaid">
+                                                        <input type="text" class="form-control" name="amountPaid" id="amountPaid">
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label class="form-label fw-bold text-brown mb-2">Mode of Payment:</label>
-                                                        <input type="text" class="form-control" name="paymentModeAdd" value="Gcash" id="paymentModeAdd">
-                                                    </div>
+                                                <label class="form-label fw-bold text-brown mb-2">Mode of Payment:</label>
+                                                <select class="form-control" name="paymentModeAdd" id="paymentModeAdd" onchange="toggleOtherPaymentMode()">
+                                                    <option value="cash">Cash</option>
+                                                    <option value="gcash">GCash</option>
+                                                    <option value="maya">Maya</option>
+                                                    <option value="others">Others</option>
+                                                </select>
+                                                <input type="text" class="form-control mt-2 d-none" name="otherPaymentMode" id="otherPaymentMode" placeholder="Please specify">
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label class="form-label fw-bold text-brown mb-2">Balance:</label>
-                                                        <input type="text" class="form-control" name="balanceAdd" value="PHP 200.00" id="balanceAdd">
+                                                        <input type="text" class="form-control" name="balanceAdd" id="balanceAdd">
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-                                                        <label class="form-label fw-bold text-brown mb-2">Payment Status:</label>
-                                                        <input type="text" class="form-control" name="paymentStatusAdd" value="Downpayment" id="paymentStatusAdd">
+                                                    <label class="form-label fw-bold text-brown mb-2">Payment Status:</label>
+                                                    <select class="form-control" name="paymentStatusAdd" id="paymentStatusAdd">
+                                                        <option value="fully_paid">Fully Paid</option>
+                                                        <option value="down_payment">Down Payment</option>
+                                                    </select>
                                                     </div>
                                                 </div>
                                             </div>
@@ -316,8 +315,7 @@ try {
         </div>
     </div>
 </div>
-    <script src="admin.js">
-    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
