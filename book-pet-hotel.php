@@ -97,7 +97,7 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Your custom JavaScript -->
-    <script src="booking.js"></script>
+    <script src="book.js"></script>
 
 
 </head>
@@ -359,36 +359,36 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
     }
     
     function calculateTotalPrice() {
-    // Get all price cells
-    let priceCells = document.querySelectorAll("[data-label='Price']");
-    let total = 0;
-    
-    // Sum up all prices
-    priceCells.forEach(cell => {
-        let priceText = cell.textContent.replace('₱', '').replace(',', '');
-        let price = parseFloat(priceText);
-        if (!isNaN(price)) {
-            total += price;
+        // Get all price cells
+        let priceCells = document.querySelectorAll("[data-label='Price']");
+        let total = 0;
+        
+        // Sum up all prices
+        priceCells.forEach(cell => {
+            let priceText = cell.textContent.replace('₱', '').replace(',', '');
+            let price = parseFloat(priceText);
+            if (!isNaN(price)) {
+                total += price;
+            }
+        });
+        
+        // Format the total with two decimal places
+        const formattedTotal = total.toFixed(2);
+        
+        // Set total in the payment modal
+        let totalElement = document.getElementById("summaryTotalAmount");
+        if (totalElement) {
+            totalElement.textContent = "₱ " + formattedTotal;
         }
-    });
-    
-    // Format the total with two decimal places
-    const formattedTotal = total.toFixed(2);
-    
-    // Set total in the payment modal
-    let totalElement = document.getElementById("summaryTotalAmount");
-    if (totalElement) {
-        totalElement.textContent = "₱ " + formattedTotal;
+        
+        // Set remaining balance (same as total for now)
+        let balanceElement = document.getElementById("summaryRemainingBalance");
+        if (balanceElement) {
+            balanceElement.textContent = "₱ " + formattedTotal;
+        }
+        
+        return total;
     }
-    
-    // Set remaining balance (same as total for now)
-    let balanceElement = document.getElementById("summaryRemainingBalance");
-    if (balanceElement) {
-        balanceElement.textContent = "₱ " + formattedTotal;
-    }
-    
-    return total;
-}
 </script>
 
                             <div class="lower-section">
@@ -548,15 +548,12 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
                                 <div class="info-row"><span class="label">Service:</span><span class="value">Pet Hotel</span></div>
                                 <div id="petSummaryDetails">
                                     <!-- Pet details will be inserted here dynamically -->
-                                    <div class="info-row"><span class="label">Breed:</span><span class="value" id="summaryBreed">Shih Tzu</span></div>
-                                    <div class="info-row"><span class="label">Gender:</span><span class="value" id="summaryGender">Male</span></div>
-                                    <div class="info-row"><span class="label">Age:</span><span class="value" id="summaryAge">7 years old</span></div>
                                 </div>
                                 <div class="info-row"><span class="label">Owner:</span><span class="value">
                                     <?php echo isset($customerInfo) ? htmlspecialchars($customerInfo['customer_first_name'] . ' ' . $customerInfo['customer_last_name']) : 'Jude Emmanuel Flores'; ?>
                                 </span></div>
-                                <div class="info-row"><span class="label">Amount to pay:</span><span class="value" id="summaryTotalAmount">₱ 0.00</span></div>
-                                <div class="info-row"><span class="label">Remaining Balance:</span><span class="value" id="summaryRemainingBalance">₱ 0.00</span></div>
+                                <div class="info-row"><span class="label">Amount to pay:</span><span class="value" id="summaryTotalAmount">₱ 250.00</span></div>
+                                <div class="info-row"><span class="label">Remaining Balance:</span><span class="value" id="summaryRemainingBalance">₱ 250.00</span></div>
                             </div>
 
                             <form method="POST" enctype="multipart/form-data" id="paymentForm">
@@ -586,10 +583,7 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
                                 <p>Account Number: <span>987654321</span></p>
                                 <p>Account Name: <span>Veatrice Delos Santos</span></p>
                             </div>
-                            <button type="button" class="action-btn" id="proceed-to-waiver" style="margin-bottom: 100px;"
-                                data-bs-dismiss="modal"
-                                data-bs-toggle="modal"
-                                data-bs-target="#waiverForm" disabled>
+                            <button type="button" class="btn btn-primary action-btn" id="proceed-to-waiver" data-toggle="modal" data-target="#waiverForm" disabled>
                                 Complete Booking
                             </button>
                         </div>
@@ -599,86 +593,89 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
         </div>
     </div>
 </div>
-                                    <div class="modal fade" id="waiverForm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                                            <div class="modal-content">
-                                                <div class="modal-header" id="waiverForm-header">
-                                                    <h1 class="modal-title" id="waiverForm-title">Liability Release and Waiver Form</h1>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body" id="waiverForm-body">
+                                    <div class="modal fade" id="waiverForm" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" id="waiverForm-header">
+                <h1 class="modal-title" id="waiverForm-title">Liability Release and Waiver Form</h1>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="waiverForm-body">
+                <!-- Waiver content remains the same -->
+                <p>
+                    We care about the safety and wellbeing of all pets. We want to assure you that we will make every effort to make your pet's stay with us as pleasant as possible.
+                    While we provide the best care for your fur babies, there are possible risks that come with availing of pet boarding services.
+                </p>
 
-                                                    <p>
-                                                        We care about the safety and wellbeing of all pets. We want to assure you that we will make every effort to make your pet's stay with us as pleasant as possible.
-                                                        While we provide the best care for your fur babies, there are possible risks that come with availing of pet boarding services.
-                                                    </p>
+                <!-- Rest of the waiver content -->
+                <ul>
+                    <!-- <h6> Health & Vaccination Requirements</h6> -->
+                    <li>
+                        Owner represents that his/her pet is in all respects healthy and received all required vaccines (Distemper/ Canine Adenovirus-2, Canine Parvovirus-2 and Rabies), currently flea protection (Frontline, Advantage or Revolution for dogs) and that said pet does not suffer from any disability, illness or condition which could affect the said paid, other pets, employees and customers safety.
+                        If the Owner's pet has external parasites, Owner agrees by signing this form that ADORAFUR HAPPY STAY may apply frontline spray to Owner's pet at Owner's own cost, for such parasites so as not to contaminate this facility or the other pets saying at ADORAFUR HAPPY STAY.
+                    </li>
 
-                                                    <ul>
-                                                        <!-- <h6> Health & Vaccination Requirements</h6> -->
-                                                        <li>
-                                                            Owner represents that his/her pet is in all respects healthy and received all required vaccines (Distemper/ Canine Adenovirus-2, Canine Parvovirus-2 and Rabies), currently flea protection (Frontline, Advantage or Revolution for dogs) and that said pet does not suffer from any disability, illness or condition which could affect the said paid, other pets, employees and customers safety.
-                                                            If the Owner's pet has external parasites, Owner agrees by signing this form that ADORAFUR HAPPY STAY may apply frontline spray to Owner's pet at Owner's own cost, for such parasites so as not to contaminate this facility or the other pets saying at ADORAFUR HAPPY STAY.
-                                                        </li>
+                    <!-- <h6> Risk and Responsibilities</h6> -->
+                    <li>
+                        I recognize that there are inherent risks of injury or illness in any environment associated with cageless pets in daycare and in boarding environments.
+                        I also recognize that such risks may include, without limitation, injuries or illnesses resulting from fights, rough play and contagious diseases.
+                        Knowing such inherent risks and dangers, I understand and affirm that ADORAFUR HAPPY STAY cannot be held responsible for any injury, illness or damage caused by my pet and that I am solely responsible for the same.
+                        I agree to hold ADORAFUR HAPPY STAY free and harmless from any claims for damage, all defense costs, fees and business losses arising from any claim or any third party may have against ADORAFUR HAPPY STAY.
+                    </li>
 
-                                                        <!-- <h6> Risk and Responsibilities</h6> -->
-                                                        <li>
-                                                            I recognize that there are inherent risks of injury or illness in any environment associated with cageless pets in daycare and in boarding environments.
-                                                            I also recognize that such risks may include, without limitation, injuries or illnesses resulting from fights, rough play and contagious diseases.
-                                                            Knowing such inherent risks and dangers, I understand and affirm that ADORAFUR HAPPY STAY cannot be held responsible for any injury, illness or damage caused by my pet and that I am solely responsible for the same.
-                                                            I agree to hold ADORAFUR HAPPY STAY free and harmless from any claims for damage, all defense costs, fees and business losses arising from any claim or any third party may have against ADORAFUR HAPPY STAY.
-                                                        </li>
+                    <!-- <h6>Aggressive Pets Pollicy</h6> -->
+                    <li>
+                        Pets must be sociable to be allowed to stay with us.
+                        Some pets may have aggressive tendencies if triggered, despite being able to socialize.
+                        If your pet has any history of aggression such as food, territorial, possessive aggression, or if they don't want to be touched in a certain body part, please inform us so we may cater to their behavior needs.
+                        As much as possible we would love to avoid using restricting instruments to pets. However, if the need arise we may isolate, crate, leash or muzzle an aggressive pet.
+                        In any case, we reserve the right to refuse any pet that are hostile, aggressive and appear to be ill for everyone's safety.
+                    </li>
 
-                                                        <!-- <h6>Aggressive Pets Pollicy</h6> -->
-                                                        <li>
-                                                            Pets must be sociable to be allowed to stay with us.
-                                                            Some pets may have aggressive tendencies if triggered, despite being able to socialize.
-                                                            If your pet has any history of aggression such as food, territorial, possessive aggression, or if they don't want to be touched in a certain body part, please inform us so we may cater to their behavior needs.
-                                                            As much as possible we would love to avoid using restricting instruments to pets. However, if the need arise we may isolate, crate, leash or muzzle an aggressive pet.
-                                                            In any case, we reserve the right to refuse any pet that are hostile, aggressive and appear to be ill for everyone's safety.
-                                                        </li>
+                    <!-- <h6>Emergency Vet Care</h6> -->
+                    <li>
+                        Please be aware that we strive to avoid any accidents during their stay.
+                        Pets can be unpredictable and injuries, illness or escaping may occur.
+                        Minor injuries from nicks from clippers during grooming or rough play may result if your pet does not respond to the handler to behave properly during their stay.
+                        All pet owners are required to accept these and other risks as a condition of their pet's participation in our services at Adorafur Happy Stay.
+                    </li>
 
-                                                        <!-- <h6>Emergency Vet Care</h6> -->
-                                                        <li>
-                                                            Please be aware that we strive to avoid any accidents during their stay.
-                                                            Pets can be unpredictable and injuries, illness or escaping may occur.
-                                                            Minor injuries from nicks from clippers during grooming or rough play may result if your pet does not respond to the handler to behave properly during their stay.
-                                                            All pet owners are required to accept these and other risks as a condition of their pet's participation in our services at Adorafur Happy Stay.
-                                                        </li>
+                    <!-- <h6>Ownership & Liability</h6> -->
+                    <li>
+                        Adorafur Happy Stay will not be held responsible for any sickness, injury or death caused by the pet to itself during grooming,
+                        from pre-existing health conditions, natural disasters, or any illness a pet acquires due to non-vaccination or expired vaccines.
+                    </li>
 
-                                                        <!-- <h6>Ownership & Liability</h6> -->
-                                                        <li>
-                                                            Adorafur Happy Stay will not be held responsible for any sickness, injury or death caused by the pet to itself during grooming,
-                                                            from pre-existing health conditions, natural disasters, or any illness a pet acquires due to non-vaccination or expired vaccines.
-                                                        </li>
+                    <!-- <h6>Non-Payment & Abandonment Policy</h6> -->
+                    <li>
+                        I agree to hold Adorafur Happy Stay harmless from any claims for damage, all defense costs, fees and business losses arising resulting from any claims to be made against Adorafur Happy Stay
+                        for which its agents or employees are not ultimately held to be legally responsible.
+                    </li>
 
-                                                        <!-- <h6>Non-Payment & Abandonment Policy</h6> -->
-                                                        <li>
-                                                            I agree to hold Adorafur Happy Stay harmless from any claims for damage, all defense costs, fees and business losses arising resulting from any claims to be made against Adorafur Happy Stay
-                                                            for which its agents or employees are not ultimately held to be legally responsible.
-                                                        </li>
+                    <!-- <h6>Owner Responsibilities</h6> -->
+                    <li> I certify that my pet has never unduly harmed or threatened anyone or any other pets.</li>
+                    <li> I expressly agree to be held responsible for any damage to property (i.e. kennels, fencing, walls, flooring etc.) caused by my pet.</li>
+                    <li> I expressly agree to be held responsible for medical costs for any human injury caused by my pet. </li>
 
-                                                        <!-- <h6>Owner Responsibilities</h6> -->
-                                                        <li> I certify that my pet has never unduly harmed or threatened anyone or any other pets.</li>
-                                                        <li> I expressly agree to be held responsible for any damage to property (i.e. kennels, fencing, walls, flooring etc.) caused by my pet.</li>
-                                                        <li> I expressly agree to be held responsible for medical costs for any human injury caused by my pet. </li>
+                    <!-- <h6>Pet Health & Medical Disclosures</h6> -->
+                    <li>The Owner understands that it is possible for us to discover a pet's illness during their stay with us such as arthritis, cysts,
+                        cancer or any health problems old age brings for senior dogs.</li>
 
-                                                        <!-- <h6>Pet Health & Medical Disclosures</h6> -->
-                                                        <li>The Owner understands that it is possible for us to discover a pet's illness during their stay with us such as arthritis, cysts,
-                                                            cancer or any health problems old age brings for senior dogs.</li>
+                    These conditions take time to develop and could be discovered during their stay.</li>
 
-                                                        These conditions take time to develop and could be discovered during their stay.</li>
+                    In that case, we will notify you immediately if something feels off with your pet and we would take them to the vet to get a diagnosis and proper treatment,
+                    costs shall be shouldered by the owner. We understand how stressful and worrisome this is if this may happen to your pet.
+                    Rest assured we will give them the care they need and provide the best comfort for them as much as possible. We will send you daily updates, vet's advice and etc.
 
-                                                        In that case, we will notify you immediately if something feels off with your pet and we would take them to the vet to get a diagnosis and proper treatment,
-                                                        costs shall be shouldered by the owner. We understand how stressful and worrisome this is if this may happen to your pet.
-                                                        Rest assured we will give them the care they need and provide the best comfort for them as much as possible. We will send you daily updates, vet's advice and etc.
+                    <li>
+                        Your pet's safety and well being is our absolute #1 priority.
+                    </li>
 
-                                                        <li>
-                                                            Your pet's safety and well being is our absolute #1 priority.
-                                                        </li>
-
-                                                        <li>
-                                                            Should the owner leave intentionally their pet in ADORAFUR HAPPY STAY without giving any communication for more than 1 week,
-                                                            ADORAFUR HAPPY STAY reserves the right to hold the pet as a security for non-payment of the services and may sell and alienate the same,
+                    <li>
+                        Should the owner leave intentionally their pet in ADORAFUR HAPPY STAY without giving any communication for more than 1 week,
+                        ADORAFUR HAPPY STAY reserves the right to hold the pet as a security for non-payment of the services and may sell and alienate the same,
                                                             without the consent of the owner, to a third party to satisfy any claims it may have against the customer.
                                                             Otherwise, Adorafur Happy Stay shall have the dogs/ cats adopted or endorse them to the necessary dog impounding station as deemed necessary
                                                         </li>
@@ -702,17 +699,17 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
                                                     </p>
 
                                                     <p>
-                                                        <input type="checkbox" id="waiverForm-checkbox1" name="agree" value="1" required>
+                                                        <input type="checkbox" id="waiverForm-checkbox1" name="agree" value="1">
                                                         I hereby grant Adorafur Happy Stay  and its care takers permission to board and care for my pet
                                                     </p>
                                                     <p>
-                                                        <input type="checkbox" id="waiverForm-checkbox2" name="agree" value="1" required>
+                                                        <input type="checkbox" id="waiverForm-checkbox2" name="agree" value="1">
                                                         I have read and agree with the  Liability Release and Waiver Form
                                                     </p>
                                                 </div>
 
                                                 <div class="modal-footer" id="waiverForm-footer">
-                                                    <button type="button" class="btn" id="complete-booking">Complete Booking</button>
+                                                    <button type="button" class="btn btn-primary" id="complete-booking">Complete Booking</button>
                                                     
                                                 </div>
                                             </div>
@@ -993,7 +990,7 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
 <script>
     $(document).ready(function() {
         // Store booking data globally
-        let bookingData = {
+        window.bookingData = {
             pets: [], // Array to store multiple pets
             checkInDate: "",
             checkInTime: "",
@@ -1097,76 +1094,12 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
             }
         });
 
-        // Remove pet from booking data when row is removed
-        window.removePetRow = function(button) {
-            const row = button.closest("tr");
-            const petSelect = row.querySelector(".petSelect");
-            const petName = petSelect.options[petSelect.selectedIndex].text;
-            
-            // Remove pet from bookingData.pets array
-            bookingData.pets = bookingData.pets.filter(pet => pet.name !== petName);
-            
-            // Remove the row from the DOM
-            row.remove();
-            
-            // Update total price
-            calculateTotalPrice();
-            
-            // Update summary
-            updateBookingSummary();
-        };
-
-        // Handle calendar date selection
-        $(document).on("click", ".days-grid .day:not(.disabled)", function() {
-            if ($(".calendar").hasClass("disabled-section")) return;
-
-            // Get the selected date
-            const selectedDate = $(this).data("date");
-            const formattedDate = new Date(selectedDate).toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric'
-            });
-            
-            // Store the date
-            bookingData.checkInDate = formattedDate;
-            
-            // If this is a range selection, store as checkout date
-            if (bookingData.checkInDate && !bookingData.checkOutDate) {
-                bookingData.checkOutDate = formattedDate = formattedDate;
-            }
-            
-            // Update summary
-            updateBookingSummary();
-        });
-
-        // Handle check-in time selection
-        $(".check-in-time").click(function() {
-            if ($(".checkin-out").hasClass("disabled-section")) return;
-
-            const selectedTime = $(this).text();
-            bookingData.checkInTime = selectedTime;
-            
-            // Update summary
-            updateBookingSummary();
-        });
-
-        // Handle check-out time selection
-        $(".check-out-time").click(function() {
-            if ($(".checkin-out").hasClass("disabled-section")) return;
-
-            const selectedTime = $(this).text();
-            bookingData.checkOutTime = selectedTime;
-            
-            // Update summary
-            updateBookingSummary();
-        });
-
         // Initialize the payment modal when it's opened
         $('#petPaymentModal').on('show.bs.modal', function() {
             // Set default values for check-in and check-out if they're empty
             if (!bookingData.checkInDate || !bookingData.checkInTime) {
                 // Try to get values from the UI
-                const checkInDate = $('.days-grid .day.selected').data('date');
+                const checkInDate = $('.days-grid .day.selected').first().data('date');
                 const checkInTime = $('#checkInMenu').text();
                 
                 if (checkInDate && checkInTime && checkInTime !== "Choose Time") {
@@ -1183,10 +1116,15 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
             
             if (!bookingData.checkOutDate || !bookingData.checkOutTime) {
                 // Try to get values from the UI
+                const checkOutDate = $('.days-grid .day.selected').last().data('date');
                 const checkOutTime = $('#checkOutMenu').text();
                 
-                if (bookingData.checkInDate && checkOutTime && checkOutTime !== "Choose Time") {
-                    bookingData.checkOutDate = bookingData.checkInDate;
+                if (checkOutDate && checkOutTime && checkOutTime !== "Choose Time") {
+                    const formattedDate = new Date(checkOutDate).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    bookingData.checkOutDate = formattedDate;
                     bookingData.checkOutTime = checkOutTime;
                 } else {
                     $('#summaryCheckOut').text("Not selected");
@@ -1228,56 +1166,6 @@ $transactionNo = 'TRX'.time().rand(1000, 9999);
         // Update summary when payment modal is opened
         $('#petPaymentModal').on('shown.bs.modal', function() {
             updateBookingSummary();
-        });
-
-        // Function to validate payment form
-        function validatePaymentForm() {
-            const referenceNo = $('input[name="reference_no"]').val().trim();
-            const paymentProof = $('input[name="payment_proof"]').prop('files').length;
-            
-            // Enable button only if both fields are filled
-            if (referenceNo && paymentProof > 0) {
-                $('#proceed-to-waiver').prop('disabled', false);
-            } else {
-                $('#proceed-to-waiver').prop('disabled', true);
-            }
-        }
-        
-        // Validate on input change
-        $('input[name="reference_no"]').on('input', validatePaymentForm);
-        $('input[name="payment_proof"]').on('change', validatePaymentForm);
-        
-        // Initialize validation state when modal opens
-        $('#petPaymentModal').on('shown.bs.modal', function() {
-            validatePaymentForm();
-            
-            // Show the appropriate QR code based on selected payment method
-            const selectedPayment = $('input[name="payment_method"]:checked').val();
-            if (selectedPayment === 'GCash') {
-                $('#gcashQR').show();
-                $('#mayaQR').hide();
-            } else {
-                $('#gcashQR').hide();
-                $('#mayaQR').show();
-            }
-        });
-        
-        // Reset form when modal is closed
-        $('#petPaymentModal').on('hidden.bs.modal', function() {
-            $('input[name="reference_no"]').val('');
-            $('input[name="payment_proof"]').val('');
-            $('#proceed-to-waiver').prop('disabled', true);
-        });
-        
-        // Handle payment method change
-        $('input[name="payment_method"]').change(function() {
-            if ($(this).val() === 'GCash') {
-                $('#gcashQR').show();
-                $('#mayaQR').hide();
-            } else {
-                $('#gcashQR').hide();
-                $('#mayaQR').show();
-            }
         });
     });
 </script>
